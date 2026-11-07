@@ -54,19 +54,34 @@
           <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
         </inertia>
       </inertial>
-      <!-- 9545 prop (241 mm), two blades so the spin shows. Motor 2 is red. -->
+      <!-- Motor look: Hawk's Work A2212 920KV (same 2212/920KV class as RPIC17's T-Motor),
+           modelled in Blender (Ø27.7 x 30 mm). Sleeve, red cap/shaft and spinner turn with the prop. -->
+      <visual name="band">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/motor_band.stl</uri></mesh></geometry>
+        <material><ambient>0.12 0.12 0.14 1</ambient><diffuse>0.12 0.12 0.14 1</diffuse></material>
+      </visual>
+      <visual name="bell">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/motor_bell.stl</uri></mesh></geometry>
+        <material><ambient>0.7 0.04 0.04 1</ambient><diffuse>0.7 0.04 0.04 1</diffuse></material>
+      </visual>
+      <visual name="spinner">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/motor_spinner.stl</uri></mesh></geometry>
+        <material><ambient>0.03 0.03 0.03 1</ambient><diffuse>0.03 0.03 0.03 1</diffuse></material>
+      </visual>
+      <!-- E-Prop 10x4.5 mesh from PX4's 3DR Iris model (PX4-SITL_gazebo-classic, BSD), scaled
+           to the F550's 9.4" (239 mm) props. Motor 2 is red. -->
       <visual name="prop">
         <pose>0 0 0.012 0 0 0</pose>
-        <geometry><box><size>0.241 0.022 0.004</size></box></geometry>
+        <geometry>
+          <mesh>
+            <uri>file://$(find ft_tilt_description)/meshes/iris_prop_${'cw' if spin > 0 else 'ccw'}.dae</uri>
+            <scale>${0.239 / 0.2577} ${0.239 / 0.2577} ${0.239 / 0.2577}</scale>
+          </mesh>
+        </geometry>
         <material>
           <ambient>${'0.8 0.1 0.1 1' if i == 2 else '0.1 0.1 0.1 1'}</ambient>
           <diffuse>${'0.8 0.1 0.1 1' if i == 2 else '0.1 0.1 0.1 1'}</diffuse>
         </material>
-      </visual>
-      <visual name="hub">
-        <pose>0 0 0.012 0 0 0</pose>
-        <geometry><cylinder><radius>0.008</radius><length>0.012</length></cylinder></geometry>
-        <material><ambient>0.6 0.6 0.6 1</ambient><diffuse>0.6 0.6 0.6 1</diffuse></material>
       </visual>
     </link>
     <joint name="rotor_${i}_joint" type="revolute">
@@ -100,18 +115,24 @@
 
   <xacro:macro name="motor_mount" params="i">
     <xacro:property name="th" value="${(i - 1) * pi / 3}"/>
-    <!-- 3D-printed adapter and 2212 motor, tilted with the rotor axis (RPIC17 Fig. 4). -->
+    <!-- 3D-printed adapter and motor base, tilted with the rotor axis (RPIC17 Fig. 4). -->
     <xacro:property name="ax" value="${cos(tilt) * cos(th)}"/>
     <xacro:property name="ay" value="${cos(tilt) * sin(th)}"/>
     <xacro:property name="az" value="${sin(tilt)}"/>
+    <!-- A2212 base and stator windings: the static half of meshes/motor_*.stl. -->
     <visual name="motor_${i}">
-      <pose>${arm * cos(th) - 0.008 * ax} ${arm * sin(th) - 0.008 * ay} ${-0.008 * az} 0 ${pi / 2 - tilt} ${th}</pose>
-      <geometry><cylinder><radius>0.014</radius><length>0.026</length></cylinder></geometry>
-      <material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+      <pose>${arm * cos(th)} ${arm * sin(th)} 0 0 ${pi / 2 - tilt} ${th}</pose>
+      <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/motor_base.stl</uri></mesh></geometry>
+      <material><ambient>0.7 0.04 0.04 1</ambient><diffuse>0.7 0.04 0.04 1</diffuse></material>
+    </visual>
+    <visual name="stator_${i}">
+      <pose>${arm * cos(th)} ${arm * sin(th)} 0 0 ${pi / 2 - tilt} ${th}</pose>
+      <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/motor_stator.stl</uri></mesh></geometry>
+      <material><ambient>0.72 0.45 0.2 1</ambient><diffuse>0.72 0.45 0.2 1</diffuse></material>
     </visual>
     <visual name="adapter_${i}">
-      <pose>${arm * cos(th) - 0.026 * ax} ${arm * sin(th) - 0.026 * ay} ${-0.026 * az} 0 ${pi / 2 - tilt} ${th}</pose>
-      <geometry><box><size>0.04 0.03 0.012</size></box></geometry>
+      <pose>${arm * cos(th) - 0.0313 * ax} ${arm * sin(th) - 0.0313 * ay} ${-0.0313 * az} 0 ${pi / 2 - tilt} ${th}</pose>
+      <geometry><box><size>0.04 0.03 0.010</size></box></geometry>
       <material><ambient>0.9 0.5 0.1 1</ambient><diffuse>0.9 0.5 0.1 1</diffuse></material>
     </visual>
   </xacro:macro>
@@ -130,19 +151,90 @@
         <geometry><cylinder><radius>0.15</radius><length>0.2</length></cylinder></geometry>
       </collision>
       <!-- DJI F550 frame, "DJI Flame Wheel F550" by An Dré (Printables 1436460, public domain).
-           Motors and props removed, rotated -30° so arm i holds motor i, scaled so the motor
+           Motors, props and GPS mast removed, faces turned outward, rotated -30° so arm i holds motor i, scaled so the motor
            pads sit at the papers' 0.26 m (F550: 0.273 m). Arm 1 (+x) is red. -->
       <visual name="f550_body">
         <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/f550_body.stl</uri></mesh></geometry>
-        <material><ambient>0.25 0.25 0.25 1</ambient><diffuse>0.25 0.25 0.25 1</diffuse></material>
+        <material><ambient>0.25 0.25 0.25 1</ambient><diffuse>0.25 0.25 0.25 1</diffuse><double_sided>true</double_sided></material>
       </visual>
       <visual name="f550_arm1">
         <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/f550_arm1.stl</uri></mesh></geometry>
-        <material><ambient>0.8 0.1 0.1 1</ambient><diffuse>0.8 0.1 0.1 1</diffuse></material>
+        <material><ambient>0.8 0.1 0.1 1</ambient><diffuse>0.8 0.1 0.1 1</diffuse><double_sided>true</double_sided></material>
       </visual>
       <visual name="f550_arms">
         <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/f550_arms.stl</uri></mesh></geometry>
-        <material><ambient>0.9 0.9 0.9 1</ambient><diffuse>0.9 0.9 0.9 1</diffuse></material>
+        <material><ambient>0.9 0.9 0.9 1</ambient><diffuse>0.9 0.9 0.9 1</diffuse><double_sided>true</double_sided></material>
+      </visual>
+      <!-- Jetson Orin NX on an Auvidea JNX42 carrier (carrier from Auvidea's STEP, licence unstated;
+           Orin NX module laid out from a top-down product photo; cooler 58 x 38 x 18 mm
+           after NVIDIA's reference thermal solution, details from photos). Visual only: mass and inertia unchanged. -->
+      <visual name="jetson_pcb">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/jetson_pcb.stl</uri></mesh></geometry>
+        <material><ambient>0.03 0.08 0.3 1</ambient><diffuse>0.03 0.08 0.3 1</diffuse></material>
+      </visual>
+      <visual name="jetson_silver">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/jetson_silver.stl</uri></mesh></geometry>
+        <material><ambient>0.6 0.6 0.6 1</ambient><diffuse>0.6 0.6 0.6 1</diffuse></material>
+      </visual>
+      <visual name="jetson_dark">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/jetson_dark.stl</uri></mesh></geometry>
+        <material><ambient>0.06 0.06 0.06 1</ambient><diffuse>0.06 0.06 0.06 1</diffuse></material>
+      </visual>
+      <visual name="jetson_blue">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/jetson_blue.stl</uri></mesh></geometry>
+        <material><ambient>0.1 0.3 0.9 1</ambient><diffuse>0.1 0.3 0.9 1</diffuse></material>
+      </visual>
+      <visual name="jetson_copper">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/jetson_copper.stl</uri></mesh></geometry>
+        <material><ambient>0.55 0.3 0.12 1</ambient><diffuse>0.55 0.3 0.12 1</diffuse></material>
+      </visual>
+      <visual name="jetson_gold">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/jetson_gold.stl</uri></mesh></geometry>
+        <material><ambient>1 0.75 0.1 1</ambient><diffuse>1 0.75 0.1 1</diffuse></material>
+      </visual>
+      <visual name="jetson_green">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/jetson_green.stl</uri></mesh></geometry>
+        <material><ambient>0.3 0.7 0.1 1</ambient><diffuse>0.3 0.7 0.1 1</diffuse></material>
+      </visual>
+      <visual name="jetson_shroud">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/jetson_shroud.stl</uri></mesh></geometry>
+        <material><ambient>0.05 0.05 0.05 1</ambient><diffuse>0.05 0.05 0.05 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+      </visual>
+      <visual name="jetson_fan">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/jetson_fan.stl</uri></mesh></geometry>
+        <material><ambient>0.02 0.02 0.02 1</ambient><diffuse>0.02 0.02 0.02 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+      </visual>
+      <visual name="jetson_mod_pcb">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/jetson_mod_pcb.stl</uri></mesh></geometry>
+        <material><ambient>0.02 0.02 0.025 1</ambient><diffuse>0.02 0.02 0.025 1</diffuse><specular>0.3 0.3 0.3 1</specular></material>
+      </visual>
+      <visual name="jetson_mod_substrate">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/jetson_mod_substrate.stl</uri></mesh></geometry>
+        <material><ambient>0.1 0.35 0.38 1</ambient><diffuse>0.1 0.35 0.38 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+      </visual>
+      <visual name="jetson_mod_lid">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/jetson_mod_lid.stl</uri></mesh></geometry>
+        <material><ambient>0.8 0.8 0.82 1</ambient><diffuse>0.8 0.8 0.82 1</diffuse><specular>0.8 0.8 0.8 1</specular></material>
+      </visual>
+      <visual name="jetson_mod_chip">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/jetson_mod_chip.stl</uri></mesh></geometry>
+        <material><ambient>0.07 0.07 0.08 1</ambient><diffuse>0.07 0.07 0.08 1</diffuse><specular>0.2 0.2 0.2 1</specular></material>
+      </visual>
+      <visual name="jetson_mod_ind">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/jetson_mod_ind.stl</uri></mesh></geometry>
+        <material><ambient>0.45 0.45 0.47 1</ambient><diffuse>0.45 0.45 0.47 1</diffuse><specular>0.5 0.5 0.5 1</specular></material>
+      </visual>
+      <visual name="jetson_mod_mark">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/jetson_mod_mark.stl</uri></mesh></geometry>
+        <material><ambient>0.42 0.42 0.44 1</ambient><diffuse>0.42 0.42 0.44 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+      </visual>
+      <visual name="jetson_mod_gold">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/jetson_mod_gold.stl</uri></mesh></geometry>
+        <material><ambient>1 0.75 0.1 1</ambient><diffuse>1 0.75 0.1 1</diffuse></material>
+      </visual>
+      <visual name="jetson_mod_copper">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/jetson_mod_copper.stl</uri></mesh></geometry>
+        <material><ambient>0.55 0.3 0.12 1</ambient><diffuse>0.55 0.3 0.12 1</diffuse></material>
       </visual>
       <xacro:motor_mount i="1"/>
       <xacro:motor_mount i="2"/>

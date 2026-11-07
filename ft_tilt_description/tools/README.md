@@ -1,0 +1,15 @@
+# Mesh tools
+
+Scripts that generate the visual meshes in `../meshes`. Run from this directory, Blender ≥ 4.2
+(`B` = path to the Blender binary). Visual only; vehicle dynamics come from the xacro numbers.
+
+| Script | Makes | Command |
+|---|---|---|
+| `f550_export.py` | `f550_*.stl` from the Printables 1436460 F550 STL | `B -b -P f550_export.py -- f550.stl ../meshes` |
+| `a2212.py` | `motor_*.stl` (A2212 920KV look) | `B -b -P a2212.py -- ../meshes` |
+| `step2stl.py` | one STL per colour from the Auvidea JNX42 STEP, plus `colours.txt` | `pixi exec -s ocp -s python=3.11 python step2stl.py JNX42.step jnx42/` |
+| `jetson_build.py` | `jetson_*.stl` (carrier, Orin NX module, cooler) | `B -b -P jetson_build.py -- jnx42 jnx42/colours.txt ../meshes` |
+| `open_jetson.py` | opens the Jetson meshes in Blender, grouped in collections | `B -P open_jetson.py [-- jetson.blend]` |
+
+Inputs (F550 STL, JNX42 STEP) are not in the repo. The Auvidea STEP has no stated licence; check
+it before publishing the `jetson_*` carrier meshes.

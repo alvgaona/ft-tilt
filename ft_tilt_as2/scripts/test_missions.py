@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
-"""Fly the Aerostack2 mission over a matrix of cases, each in a fresh headless sim, and print a table.
+"""Run mission.py over CASES, each in a fresh sim on its own ROS domain and gz partition.
 
-    pixi run test-missions [--gui] [case ...]      # all cases, or only the named ones
-
-Each case runs on its own ROS domain / gz partition, so a GUI sim you have open is not touched.
-Logs: bags/missions/<case>.log. A case passes when the mission's RESULT matches `expect`.
+    pixi run test-missions [--gui] [case ...]
 """
 import os
 import re
@@ -18,10 +15,10 @@ CASES = {
     "nominal":        ([], [], "PASS"),
     **{f"fault{m}":   ([], ["--fault-motor", str(m)], "PASS") for m in range(1, 7)},
     "goto_fault2":    ([], ["--fault-motor", "2", "--goto", "3", "2"], "PASS"),
-    # RPIC17's partial fault: 40 % PWM cap = 0.241·F_M (AGENTS.md); 3s is for partial faults only.
+    # RPIC17's partial fault, 40 % PWM cap = 0.241·F_M (derived)
     "3s_partial2":    (["battery:=3s"], ["--fault-motor", "2", "--fault-health", "0.241"], "PASS"),
     "gamma73_fault2": (["gamma_deg:=73"], ["--fault-motor", "2"], "PASS"),
-    # Standard vehicle: losing a motor removes one yaw direction (AGENTS.md), so it can't hold yaw.
+    # Untilted vehicle loses one yaw direction, so it can't hold yaw.
     "gamma90_fault2": (["gamma_deg:=90"], ["--fault-motor", "2"], "FAIL"),
 }
 LOGS = os.path.normpath(os.path.join(os.getcwd(), "bags", "missions"))
@@ -33,7 +30,7 @@ def run(name, launch_args, mission_args, gui):
     sim = subprocess.Popen(["ros2", "launch", "ft_tilt_as2", "as2.launch.py", f"headless:={str(not gui).lower()}", *launch_args],
                            stdout=log, stderr=subprocess.STDOUT, env=env, start_new_session=True)
     try:
-        deadline = time.time() + 120  # controller + take-off, land and go-to behaviours
+        deadline = time.time() + 120
         while open(log.name).read().count("PLUGIN LOADED") < 4:
             if time.time() > deadline or sim.poll() is not None:
                 return "FAIL sim did not start"

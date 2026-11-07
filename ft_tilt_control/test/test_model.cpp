@@ -1,5 +1,4 @@
-// Checks the geometric model against the closed forms printed in RPIC17 (eqs. 3, 6) and
-// ICRIS18 (eq. 4). The printed A uses γ_paper = 180° − γ (see AGENTS.md, "Tilt direction").
+// The printed A (RPIC17 eqs. 3, 6, ICRIS18 eq. 4) uses γ_paper = 180° − γ: our γ leans inward.
 
 #include <gtest/gtest.h>
 

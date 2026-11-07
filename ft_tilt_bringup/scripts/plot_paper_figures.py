@@ -2,9 +2,7 @@
 
     pixi run python ft_tilt_bringup/scripts/plot_paper_figures.py [bags/] [docs/figures/]
 
-Reads the bags written by `pixi run experiment` (names: <config>_gamma<γ>_<gains>_<battery>_<allocation>)
-and writes one PNG per paper figure. Angles are in the sim's FLU frame (+pitch = nose down,
-+yaw = counter-clockwise from above); the papers don't state theirs.
+Angles are in the sim's FLU frame (+pitch = nose down, +yaw = counter-clockwise from above).
 """
 import math
 import os
@@ -22,10 +20,9 @@ from rosidl_runtime_py.utilities import get_message  # noqa: E402
 BAGS = sys.argv[1] if len(sys.argv) > 1 else "bags"
 OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join("docs", "figures")
 
-# Battery constants, as in ft_tilt.sdf.xacro: (k_f N/%, F_M N).
+# (k_f N/%, F_M N), must match ft_tilt.sdf.xacro
 BATTERY = {"3s": (0.0776, 0.644 * 9.80665), "4s": (0.083, 8.3)}
 
-# Reference categorical palette (dataviz skill), validated for 6 adjacent series on #fcfcfb.
 SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300"]
 SURFACE, INK, INK2, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#e4e3df"
 plt.rcParams.update({

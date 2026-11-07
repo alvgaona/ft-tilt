@@ -1,6 +1,6 @@
 """Gazebo Harmonic with the tilted hexacopter and the ROS bridge.
 
-Server and GUI run as separate processes, which works on Linux and macOS.
+Server and GUI run as separate processes, as macOS needs.
 """
 
 import os
@@ -57,7 +57,6 @@ def generate_launch_description() -> LaunchDescription:
             ),
             DeclareLaunchArgument("headless", default_value="false"),
             DeclareLaunchArgument("yaw", default_value="0.0", description="Spawn yaw (rad)"),
-            # Scenery models (trees, grass) used by the world as model://
             AppendEnvironmentVariable("GZ_SIM_RESOURCE_PATH", os.path.join(bringup, "models")),
             ExecuteProcess(
                 cmd=["gz", "sim", "-r", "-s", "-v", "3",
@@ -70,9 +69,8 @@ def generate_launch_description() -> LaunchDescription:
                 output="screen",
                 condition=UnlessCondition(LaunchConfiguration("headless")),
             ),
-            # Keep the GUI camera on the drone: it drops the follow target if the drone isn't
-            # in its scene yet or the view is dragged. Re-send it quickly right after spawn, then
-            # every 2 s (offset and gain come from config/gui.config).
+            # The GUI drops the follow target if the drone isn't in its scene yet or the view is
+            # dragged, so keep re-sending it.
             ExecuteProcess(
                 cmd=["bash", "-c",
                      "follow() { gz service -s /gui/follow --reqtype gz.msgs.StringMsg "

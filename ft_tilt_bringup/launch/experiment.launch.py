@@ -39,8 +39,7 @@ def generate_launch_description() -> LaunchDescription:
         output="screen",
     )
 
-    # Exits at once if bags/<name> already exists (Jazzy has no overwrite); then stop the whole run,
-    # or the experiment runs unrecorded and the plots keep the old bag.
+    # ros2 bag exits if bags/<name> exists (no overwrite in Jazzy): stop the run instead of flying unrecorded.
     recorder = ExecuteProcess(
         cmd=[
             "ros2", "bag", "record", "--use-sim-time", "-e", "/ft_tilt/.*",

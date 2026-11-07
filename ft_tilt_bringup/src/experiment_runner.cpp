@@ -1,7 +1,5 @@
-// Scripted experiment: stands in for the papers' RC pilot. Holds altitude and position (the
-// papers flew those by hand) by setting thrust and roll/pitch references for the paper's
-// attitude loop, and schedules the fault, the disturbance and yaw steps on sim time.
-// Exits when the experiment is over.
+// Scripted pilot (the papers flew position and altitude by hand): holds position, schedules the
+// fault, disturbance and yaw steps on sim time, and exits when the experiment is over.
 
 #include <algorithm>
 #include <chrono>
@@ -88,7 +86,6 @@ private:
       return;
     }
 
-    // Fault: health 1 = healthy, 0 = off, in between = PWM cap.
     actuator_msgs::msg::Actuators health;
     health.header.stamp = now;
     health.normalized.assign(6, 1.0);
@@ -127,7 +124,6 @@ private:
     const double vz = 2.0 * (q.x * q.z - q.w * q.y) * v.x + 2.0 * (q.y * q.z + q.w * q.x) * v.y +
       r22 * v.z;
 
-    // Hold the take-off point at the experiment altitude.
     if (!home_) {
       home_ = {p.position.x, p.position.y};
     }

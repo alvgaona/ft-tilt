@@ -1,22 +1,18 @@
 .DS_Store
 
-# pixi / colcon
 .pixi/
 build/
 install/
 log/
 bags/
 
-# raw F550 download (trimmed meshes live in ft_tilt_description/meshes)
 dji-flame-wheel-f550-model_files/
 
-# commitlint (pixi run -e lint)
 node_modules/
 
-# Kept locally, not published: project spec for agents and the papers (publishers' copyright)
+# Kept local: the papers are under publishers' copyright
 /AGENTS.md
 /*.pdf
 
-# Kept locally: scripts that generate the meshes and ground textures
 ft_tilt_description/tools/
 ft_tilt_bringup/tools/

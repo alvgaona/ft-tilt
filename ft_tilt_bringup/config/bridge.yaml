@@ -1,12 +1,9 @@
-# ROS ⇄ Gazebo topics of the ft_tilt model. The plugin's interface is documented at the top
-# of ft_tilt_gazebo/src/ft_tilt_controller.cpp.
 - ros_topic_name: /clock
   gz_topic_name: /clock
   ros_type_name: rosgraph_msgs/msg/Clock
   gz_type_name: gz.msgs.Clock
   direction: GZ_TO_ROS
 
-# Commands
 - ros_topic_name: /ft_tilt/attitude_ref
   gz_topic_name: /model/ft_tilt/attitude_ref
   ros_type_name: geometry_msgs/msg/Vector3
@@ -28,7 +25,6 @@
   gz_type_name: gz.msgs.Vector3d
   direction: ROS_TO_GZ
 
-# Telemetry
 - ros_topic_name: /ft_tilt/pwm
   gz_topic_name: /model/ft_tilt/pwm
   ros_type_name: actuator_msgs/msg/Actuators

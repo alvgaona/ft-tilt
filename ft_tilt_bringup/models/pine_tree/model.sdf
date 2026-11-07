@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <sdf version="1.11">
-  <!-- Low-poly pine, ~5.5 m. Visual only: scenery, nothing flies near it. -->
   <model name="pine_tree">
     <static>true</static>
     <link name="link">

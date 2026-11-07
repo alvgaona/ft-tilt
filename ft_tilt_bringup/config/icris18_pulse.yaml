@@ -1,7 +1,5 @@
-# ICRIS18 §IV, Fig. 6-7: 1 N·m pitch disturbance for 10 s with motor 2 off. Use battery:=4s.
-# Run once with failure_gains:=aggressive and once with failure_gains:=mild.
-# The paper gives no sign. With motor 2 off the controller can make My in [-0.44, +2.9] N·m
-# at hover (derived), so only a -My disturbance (rejected with +My) is survivable.
+# ICRIS18 Fig. 6-7, battery:=4s. The paper gives no sign. With motor 2 off only a -My pulse is
+# rejectable (reachable My is [-0.44, +2.9] N·m at hover, derived).
 experiment_runner:
   ros__parameters:
     duration: 40.0
@@ -11,7 +9,7 @@ experiment_runner:
     disturbance_start: 20.0
     disturbance_end: 30.0
     disturbance_torque: [0.0, -1.0, 0.0]
-    # Fig. 6-7 come from an attitude-only simulation: no position hold, attitude reference 0.
+    # Fig. 6-7 are an attitude-only simulation, so no position hold.
     position_kp: 0.0
     position_ki: 0.0
     position_kd: 0.0

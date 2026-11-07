@@ -1,8 +1,5 @@
-// Aerostack2 platform for the ft_tilt Gazebo vehicle. A thin adapter to the "flight controller"
-// (the ft_tilt::FtTiltController gz system: attitude PID → fault-aware allocation, 200 Hz):
-//   ATTITUDE (roll, pitch, yaw angle + collective thrust) → /ft_tilt/attitude_ref, thrust_ref
-//   /ft_tilt/odometry → ground_truth/pose (earth) and ground_truth/twist (base frame)
-// On hardware the same commands would go to the flight board instead.
+// Aerostack2 platform for the gz vehicle: ATTITUDE → /ft_tilt/attitude_ref + thrust_ref,
+// /ft_tilt/odometry → ground_truth pose (earth) and twist (body frame).
 
 #include <algorithm>
 #include <cmath>
@@ -36,12 +33,12 @@ public:
       "/ft_tilt/odometry", 10, [this](nav_msgs::msg::Odometry::ConstSharedPtr m) {
         geometry_msgs::msg::PoseStamped pose;
         pose.header.stamp = m->header.stamp;
-        pose.header.frame_id = "earth";  // gz world = earth (ground_truth wants this frame)
+        pose.header.frame_id = "earth";  // gz world = earth
         pose.pose = m->pose.pose;
         pose_pub_->publish(pose);
         geometry_msgs::msg::TwistStamped twist;
         twist.header.stamp = m->header.stamp;
-        twist.header.frame_id = getBaseFrameId();  // gz odometry twist is in the body frame
+        twist.header.frame_id = getBaseFrameId();
         twist.twist = m->twist.twist;
         twist_pub_->publish(twist);
       });

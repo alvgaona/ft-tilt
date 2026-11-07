@@ -1,8 +1,7 @@
-"""ft_tilt sim + Aerostack2: platform, ground-truth state estimator, motion controller with the
-ft_tilt plugin, take-off, go-to and land behaviours. Drone namespace: ft_tilt.
+"""ft_tilt sim + Aerostack2 stack in namespace ft_tilt.
 
     pixi run as2 [gamma_deg:=107] [battery:=4s] [failure_gains:=mild] [headless:=false] [yaw:=0.0]
-    pixi run mission            # in a second terminal
+    pixi run mission  # in a second terminal
 """
 import os
 

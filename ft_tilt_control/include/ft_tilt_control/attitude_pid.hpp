@@ -5,7 +5,6 @@
 namespace ft_tilt
 {
 
-// Per-axis gains for roll, pitch, yaw. Output is torque (N·m).
 struct PidGains
 {
   Eigen::Vector3d kp;  // N·m/rad
@@ -31,8 +30,7 @@ inline PidGains rpic17_gains()
   return {{1.4, 1.4, 0.8}, {0.1, 0.1, 0.2}, {0.5, 0.5, 0.6}};
 }
 
-// One PID per Euler angle (ICRIS18 "loop-at-a-time"). The papers don't say how the
-// derivative is taken; here it acts on the measured body rate, so reference steps don't kick.
+// The derivative acts on the measured body rate (the papers don't say), so reference steps don't kick.
 class AttitudePid
 {
 public:

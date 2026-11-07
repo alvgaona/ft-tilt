@@ -1,5 +1,4 @@
-# ICRIS18 §V, Fig. 12-13: yaw steps both ways with motor 2 off. One direction is weaker.
-# Use battery:=4s.
+# ICRIS18 Fig. 12-13, battery:=4s.
 experiment_runner:
   ros__parameters:
     duration: 45.0

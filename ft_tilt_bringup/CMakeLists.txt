@@ -22,8 +22,7 @@ target_link_libraries(experiment_runner
   ft_tilt_control::ft_tilt_control
 )
 if(APPLE)
-  # The message targets also link their Python bindings, which abort at load on macOS
-  # (missing Py* symbols). Drop unused dylibs, as robostack's own builds do.
+  # Message targets link their Python bindings, which abort at load on macOS (missing Py* symbols).
   target_link_options(experiment_runner PRIVATE -Wl,-dead_strip_dylibs)
 endif()
 target_compile_options(experiment_runner PRIVATE -Wall -Wextra -Wpedantic)

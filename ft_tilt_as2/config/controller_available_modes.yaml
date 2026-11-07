@@ -1,4 +1,4 @@
-# ft_tilt_motion_controller. Hover is POSITION (hoverMode()), so it is not listed.
+# Hover is POSITION (hoverMode()), so it is not listed.
 input_control_modes:
   - 0b01100000 # POSITION with yaw ANGLE (take-off, hover, go-to)
   - 0b01000100 # SPEED with yaw SPEED (land)

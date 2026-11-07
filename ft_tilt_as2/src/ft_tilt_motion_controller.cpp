@@ -1,7 +1,5 @@
-// Aerostack2 motion controller plugin: the ft_tilt position loop (ft_tilt_control,
-// PositionController). POSITION (take-off, hover, go-to) and SPEED (land) in, ATTITUDE out,
-// for the ft_tilt platform and its fault-tolerant attitude loop + allocation.
-// Works in the odom frame (FLU, z up) for both pose and velocity.
+// Aerostack2 motion controller plugin: POSITION and SPEED in, ATTITUDE out.
+// Pose and velocity both in the odom frame (FLU, z up).
 
 #include <algorithm>
 #include <cmath>
@@ -57,7 +55,7 @@ public:
 
   bool onSetMode(const ControlMode & mode_in, const ControlMode &) override
   {
-    carrot_.reset();  // the moving reference restarts from where the vehicle is
+    carrot_.reset();
     v_ref_.setZero();
     if (mode_in.yaw_mode == ControlMode::YAW_SPEED) {
       yaw_ref_ = yaw_;
@@ -146,7 +144,7 @@ private:
   Vector3d p_ref_ = Vector3d::Zero(), v_ref_ = Vector3d::Zero();
   std::optional<Vector3d> carrot_;
   double yaw_ = 0.0, yaw_ref_ = 0.0, yaw_rate_ref_ = 0.0, cos_tilt_ = 1.0;
-  double max_speed_ = 1.0;  // m/s, POSITION references that carry no speed limit
+  double max_speed_ = 1.0;  // m/s
 };
 
 }  // namespace ft_tilt_motion_controller

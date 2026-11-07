@@ -1,15 +1,9 @@
 #!/usr/bin/env python3
-"""Aerostack2 mission on the ft_tilt vehicle: arm, take off, hover, (fault), hover, (go to), land.
+"""Arm, take off, hover, (fault), hover, (go to), land. Prints a RESULT line.
 
     pixi run mission [--fault-motor 2 [--fault-health 0.241]] [--goto 3 2] [--height 1.5] [--hover 10]
 
-With --fault-motor the motor is switched off mid-hover (motor_health = 0, or --fault-health for a
-partial fault), as the papers did with an RC switch; the fault-aware allocation and gains in the
-gz plugin take over. All motors are set healthy at the start, so a previous run's fault is cleared.
-
-Ends with a RESULT line. PASS = every step succeeded, tilt ≤ 15°, yaw within 0.2 rad of the
-start and back on the ground (assumed limits: hover is within ~2° when the vehicle copes).
-Past 60° of tilt the vehicle is flipping: the motors are cut (kill switch) and the mission stops.
+PASS limits (tilt ≤ 15°, yaw ≤ 0.2 rad) are assumed, not from the papers.
 """
 import argparse
 import math
@@ -66,11 +60,11 @@ def fly(drone, args, stats):
     def watch():  # runs in the API's executor thread
         roll, pitch, yaw = drone.orientation
         tilt = math.degrees(math.acos(math.cos(roll) * math.cos(pitch)))
-        if drone.position[2] - stats["z0"] > 0.1:  # airborne
+        if drone.position[2] - stats["z0"] > 0.1:
             stats["tilt"] = max(stats["tilt"], tilt)
             err = abs(math.remainder(yaw - stats["yaw0"], math.tau))
             stats["yaw_err"] = max(stats["yaw_err"], err)
-        if tilt > CRASH_TILT_DEG and not stats["crashed"]:  # flipping: cut the motors
+        if tilt > CRASH_TILT_DEG and not stats["crashed"]:
             stats["crashed"] = True
             print(f"crash: tilt {tilt:.0f}deg, kill switch", flush=True)
             # A blocking go_to/land would wait forever for a flipped vehicle. stop() is a blocking
@@ -81,13 +75,13 @@ def fly(drone, args, stats):
             # The API's send_emergency_killswitch_to_aircraft() loops forever; it would freeze this thread.
             drone.alert_pub.publish(AlertEvent(alert=AlertEvent.KILL_SWITCH))
 
-    def hold(seconds):  # False once crashed
+    def hold(seconds):
         end = time.time() + seconds
         while time.time() < end and not stats["crashed"]:
             time.sleep(0.05)
         return not stats["crashed"]
 
-    deadline = time.time() + 10.0  # the bridge must see us, or the reset is lost; and a first pose
+    deadline = time.time() + 10.0  # the health reset is lost until the bridge subscribes
     while (health_pub.get_subscription_count() == 0 or not any(drone.position)) and time.time() < deadline:
         time.sleep(0.1)
     set_health()
@@ -102,8 +96,7 @@ def fly(drone, args, stats):
     target = stats["z0"] + args.height
     if not step("takeoff", drone.takeoff(height=args.height, speed=0.5)):
         return False
-    # takeoff_plugin_position reports success when |height − z| < 0.2 m with absolute z, ~0.4 m
-    # early for our base 0.215 m up. It leaves the takeoff target set, so wait until we're there.
+    # takeoff_plugin_position succeeds ~0.4 m early (absolute z vs our 0.215 m base) but keeps the target.
     deadline = time.time() + 15.0
     while abs(drone.position[2] - target) > 0.05 and time.time() < deadline:
         time.sleep(0.1)

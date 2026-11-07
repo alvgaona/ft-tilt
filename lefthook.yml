@@ -1,4 +1,3 @@
-# Git hooks. Install once with `pixi run -e lint hooks`.
 commit-msg:
   commands:
     commitlint:

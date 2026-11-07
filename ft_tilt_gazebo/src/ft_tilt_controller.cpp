@@ -1,6 +1,4 @@
-// Gazebo system running the papers' flight software at 200 Hz:
-// attitude PID → torque → fault-aware allocation → rotor speeds (RPIC17 §IV, ICRIS18 §IV).
-//
+// The papers' flight software at 200 Hz: attitude PID → fault-aware allocation → rotor speeds.
 // Topics, all under /model/<model name>/:
 //   in   attitude_ref        gz.msgs.Vector3d   roll, pitch, yaw (rad)
 //   in   thrust_ref          gz.msgs.Double     Fz along body z (N); motors stay off until the first one,
@@ -96,8 +94,7 @@ public:
     a_ = effectiveness(rotors, cfg->Get<double>("kt_ratio"));
     kf_ = cfg->Get<double>("kf");
     max_force_ = cfg->Get<double>("max_force");
-    // Thrust grows ~ with PWM² (thrust.hpp), so 14 % PWM is a few % of F_M, not k_f·14 %. The
-    // linear value (1.1 N) leaves no hover with motor 2 dead; ICRIS18 Fig. 11 shows motor 5 there.
+    // 14 % PWM through thrust ~ PWM²: the linear k_f·14 % (1.1 N) leaves no hover with motor 2 dead.
     floor_ = pwm_to_force(cfg->Get<double>("pwm_floor", 14.0).first, kf_, max_force_);
     motor_constant_ = cfg->Get<double>("motor_constant");
     period_ = 1.0 / cfg->Get<double>("rate", 200.0).first;
@@ -105,8 +102,7 @@ public:
     failure_gains_ = gains == "aggressive" ? aggressive_gains() :
       gains == "rpic17" ? rpic17_gains() : mild_gains();
     nominal_gains_ = gains == "rpic17" ? rpic17_gains() : aggressive_gains();
-    // null_space: fault-aware (tilted vehicle). pinv_clamp: pseudo-inverse + clamp, unaware of a
-    // partial fault (assumed for RPIC17's standard vehicle; the paper doesn't say).
+    // pinv_clamp ignores a partial fault (assumed for RPIC17's standard vehicle, the paper doesn't say).
     const auto allocation = cfg->Get<std::string>("allocation", "null_space").first;
     null_space_on_fault_ = allocation != "pinv_clamp";
     gzmsg << "FtTiltController: A =\n" << a_ << "\nfailure gains: " << gains
@@ -175,7 +171,7 @@ public:
 
       Vector6d lower, upper;
       for (int i = 0; i < kNumRotors; ++i) {
-        upper(i) = health(i) * max_force_;  // RPIC17 §V: "limited to 40% of its maximum thrust"
+        upper(i) = health(i) * max_force_;
         lower(i) = std::min(floor_, upper(i));  // never stop a working motor (ICRIS18 §V)
       }
       const Eigen::Vector4d wrench(torque.x(), torque.y(), torque.z(), *thrust);

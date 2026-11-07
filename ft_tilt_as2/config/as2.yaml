@@ -1,4 +1,3 @@
-# Aerostack2 nodes for the ft_tilt vehicle (namespace ft_tilt).
 /ft_tilt/platform:
   ros__parameters:
     cmd_freq: 100.0
@@ -21,4 +20,4 @@
       altitude_ki: 0.5
       altitude_kd: 3.0
       max_tilt_deg: 10.0
-      max_speed: 1.0  # m/s, for POSITION references without a speed limit
+      max_speed: 1.0  # m/s

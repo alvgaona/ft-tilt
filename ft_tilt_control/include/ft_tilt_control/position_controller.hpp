@@ -8,8 +8,7 @@
 namespace ft_tilt
 {
 
-// Outer loop standing in for the papers' RC pilot (they flew position and altitude by hand,
-// so none of this is in the papers; gains derived in the sim).
+// Stands in for the papers' RC pilot (not in the papers, gains tuned in the sim).
 struct PositionGains
 {
   double kp_xy = 0.2, ki_xy = 0.02, kd_xy = 0.6;  // horizontal, (m/s²) per m, m·s, m/s
@@ -24,10 +23,8 @@ struct AttitudeThrust
   double roll, pitch, thrust;  // rad (FLU, yaw frame), N along body z
 };
 
-// Position PID → acceleration → roll/pitch (small angles) and thrust along body z.
-// World frame FLU, z up. Pitching back needs −My, which is weak with motor 2 off, hence the
-// soft horizontal gains. The horizontal integral cancels the sideways force tilted rotors make
-// after a fault (≈ 0.2 m/s², derived).
+// World frame FLU, z up. Soft horizontal gains because −My (pitching back) is weak with motor 2
+// off. The integral cancels the sideways force tilted rotors make after a fault (≈ 0.2 m/s², derived).
 class PositionController
 {
 public:
@@ -42,7 +39,7 @@ public:
     const Eigen::Vector3d & v, double yaw, double cos_tilt, double dt)
   {
     constexpr double g = 9.80665;
-    // Error capped at 2 m so a far-off vehicle flies back at ≈ kp·2/kd instead of overshooting.
+    // Capped so a far-off vehicle flies back at ≈ kp·2/kd instead of overshooting.
     Eigen::Vector3d e = p_ref - p;
     e.x() = std::clamp(e.x(), -2.0, 2.0);
     e.y() = std::clamp(e.y(), -2.0, 2.0);

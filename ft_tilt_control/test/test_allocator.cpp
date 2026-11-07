@@ -114,9 +114,8 @@ TEST(Allocator, UntiltedVehicleLosesOneYawDirection)
   const Eigen::Vector4d minus_yaw(0, 0, -0.05, kWeight), plus_yaw(0, 0, 0.05, kWeight);
   const auto bad = ft_tilt::allocate(a, minus_yaw, b.lower, b.upper, true);
   EXPECT_LT(bad.margin, 0.0);
-  EXPECT_GE(bad.force.minCoeff(), 0.0);  // clamped
+  EXPECT_GE(bad.force.minCoeff(), 0.0);
   EXPECT_GE(ft_tilt::allocate(a, plus_yaw, b.lower, b.upper, true).margin, -1e-9);
-  // The tilted vehicle handles both.
   EXPECT_GE(ft_tilt::allocate(a_of(107), minus_yaw, b.lower, b.upper, true).margin, -1e-9);
 }
 

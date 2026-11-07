@@ -1,7 +1,6 @@
-# ft_tilt state estimator: Gazebo ground truth, relayed by the platform. Loaded after
-# Aerostack2's defaults, which use the /** wildcard, so these must use it too to win.
+# Aerostack2's defaults use /**, which beats node-specific keys, so ours must use /** too.
 /**:
   ros__parameters:
     plugin_name: ground_truth
     ground_truth:
-      twist_sub_topic: ground_truth/twist  # the sim's own body-frame twist, not a differentiated pose
+      twist_sub_topic: ground_truth/twist  # body frame

@@ -35,9 +35,9 @@ pixi run mission --fault-motor 2
 
 ## References
 
-- Giribet, Pose, Mas. *Fault tolerant control of an hexacopter with a tilted-rotor configuration*. RPIC 2017
-- Giribet, Pose, Ghersin, Mas. *Experimental validation of a fault-tolerant hexacopter with tilted rotors*. ICRIS 2018
-- Giribet, Sánchez-Peña, Ghersin. *Analysis and design of a tilted rotor hexacopter for fault tolerance*. IEEE TAES 52(4), 2016
+- Giribet, Pose, Mas. [*Fault tolerant control of an hexacopter with a tilted-rotor configuration*](https://ri.itba.edu.ar/entities/publication/6978b4d0-3a8d-4dd6-ba74-6df58312bbca). RPIC 2017
+- Giribet, Pose, Ghersin, Mas. [*Experimental validation of a fault-tolerant hexacopter with tilted rotors*](https://doi.org/10.18178/ijeetc.7.2.58-65). ICRIS 2018, IJEETC 7(2)
+- Giribet, Sánchez-Peña, Ghersin. [*Analysis and design of a tilted rotor hexacopter for fault tolerance*](https://doi.org/10.1109/TAES.2016.140885). IEEE TAES 52(4), 2016
 
 ## Assets
 

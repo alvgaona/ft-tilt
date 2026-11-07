@@ -1,4 +1,5 @@
 # STEP assembly -> one binary STL per surface colour (metres, Z up), via OpenCascade (OCP).
+# Extra args: names of components to leave out (with everything under them).
 import sys, struct, collections
 from OCP.STEPCAFControl import STEPCAFControl_Reader
 from OCP.TDocStd import TDocStd_Document
@@ -9,17 +10,31 @@ from OCP.RWMesh import RWMesh_FaceIterator
 from OCP.BRepMesh import BRepMesh_IncrementalMesh
 from OCP.IFSelect import IFSelect_RetDone
 
-src, outdir = sys.argv[1], sys.argv[2]
+src, outdir, skip = sys.argv[1], sys.argv[2], set(sys.argv[3:])
 doc = TDocStd_Document(TCollection_ExtendedString("doc"))
 r = STEPCAFControl_Reader(); r.SetColorMode(True); r.SetNameMode(True)
 assert r.ReadFile(src) == IFSelect_RetDone, "read failed"
 r.Transfer(doc)
 from OCP.XCAFDoc import XCAFDoc_ShapeTool
+from OCP.TDataStd import TDataStd_Name
+
+def name(label):
+    n = TDataStd_Name()
+    return n.Get().ToExtString() if label.FindAttribute(TDataStd_Name.GetID_s(), n) else ""
+skipped = set()  # path ids of skipped components
+ex = XCAFPrs_DocumentExplorer(doc, 0)
+while ex.More():
+    if name(ex.Current().Label) in skip:
+        skipped.add(ex.Current().Id.ToCString())
+    ex.Next()
 
 tris = collections.defaultdict(list)
 ex = XCAFPrs_DocumentExplorer(doc, XCAFPrs_DocumentExplorerFlags_OnlyLeafNodes)
 while ex.More():
     n = ex.Current()
+    path = n.Id.ToCString().split("/")
+    if any("/".join(path[:k]) in skipped for k in range(1, len(path) + 1)):
+        ex.Next(); continue
     BRepMesh_IncrementalMesh(XCAFDoc_ShapeTool.GetShape_s(n.RefLabel), 0.05, False, 0.5, True)
     it = RWMesh_FaceIterator(n.RefLabel, n.Location, True, n.Style)
     while it.More():

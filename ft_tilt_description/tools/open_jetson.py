@@ -4,24 +4,18 @@ import bpy, os, sys
 M = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "meshes")
 OUT = sys.argv[sys.argv.index("--") + 1] if "--" in sys.argv else None
 TREE = {  # collection -> [(stl group, object name, colour)]
-    "Carrier (Auvidea JNX42)": [
-        ("pcb", "Carrier PCB", (0.03, 0.08, 0.3)), ("silver", "Carrier connectors and shields", (0.6,) * 3),
-        ("dark", "Carrier ICs and plastics", (0.06,) * 3), ("blue", "Carrier blue parts", (0.1, 0.3, 0.9)),
-        ("copper", "Carrier copper parts", (0.55, 0.3, 0.12)), ("gold", "Carrier gold parts", (1, 0.75, 0.1)),
-        ("green", "Carrier green parts", (0.3, 0.7, 0.1))],
-    "Orin NX module": [
-        ("mod_pcb", "Module PCB", (0.02, 0.02, 0.025)), ("mod_gold", "Module edge fingers and SoC caps", (1, 0.75, 0.1)),
-        ("mod_copper", "Module pads and passives", (0.55, 0.3, 0.12)), ("mod_substrate", "SoC substrate", (0.1, 0.35, 0.38)),
-        ("mod_lid", "SoC lid and terminals", (0.8, 0.8, 0.82)), ("mod_chip", "DRAM, power ICs and inductor print", (0.07, 0.07, 0.08)),
-        ("mod_ind", "Inductor bodies", (0.45, 0.45, 0.47)), ("mod_mark", "Markings", (0.42, 0.42, 0.44))],
-    "Cooler": [
-        ("shroud", "Shroud, fins and emboss", (0.05,) * 3), ("fan", "Fan, cable and connector", (0.02,) * 3)],
+    "NVIDIA dev kit (P3768 + P3767)": [
+        ("pcb", "PCBs and fan", (0.07, 0.08, 0.07)), ("metal", "Shields, shells and standoffs", (0.7, 0.7, 0.72)),
+        ("white", "White parts", (0.9, 0.9, 0.88)), ("dark", "ICs and plastics", (0.08,) * 3),
+        ("cooler", "Cooler", (0.36, 0.43, 0.52)), ("red", "USB and screws", (0.75, 0.2, 0.05)),
+        ("blue", "Blue parts", (0.1, 0.25, 0.85)), ("green", "SO-DIMM and M.2 boards", (0.2, 0.6, 0.35)),
+        ("gold", "Gold parts", (0.85, 0.65, 0.2))],
 }
 for o in list(bpy.data.objects):
     bpy.data.objects.remove(o)
 for c in list(bpy.data.collections):
     bpy.data.collections.remove(c)
-root = bpy.data.collections.new("Jetson Orin NX on JNX42"); bpy.context.scene.collection.children.link(root)
+root = bpy.data.collections.new("Jetson dev kit"); bpy.context.scene.collection.children.link(root)
 for cname, items in TREE.items():
     col = bpy.data.collections.new(cname); root.children.link(col)
     for g, name, c in items:

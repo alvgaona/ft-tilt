@@ -1,8 +1,12 @@
-# ft-tilt
+<div align="center">
+
+# Fault-Tolerant Tilted-Rotor Hexacopter
 
 [![CI](https://github.com/alvgaona/ft-tilt/actions/workflows/ci.yaml/badge.svg)](https://github.com/alvgaona/ft-tilt/actions/workflows/ci.yaml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Pixi Badge](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/prefix-dev/pixi/main/assets/badge/v0.json)](https://pixi.sh)
+
+</div>
 
 A hexacopter with tilted rotors that keeps full attitude control after losing a motor, simulated in
 ROS 2 Jazzy and Gazebo Harmonic. It reproduces the fault-tolerant design and flight experiments of

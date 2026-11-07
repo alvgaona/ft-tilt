@@ -47,3 +47,4 @@ experiment = { cmd = "bash -c 'source install/setup.bash && ros2 launch ft_tilt_
 # Aerostack2: sim + platform + controller + behaviours; then `pixi run mission` in another terminal.
 as2 = { cmd = "bash -c 'source install/setup.bash && ros2 launch ft_tilt_as2 as2.launch.py \"$@\"' --", depends-on = ["build"] }
 mission = "bash -c 'source install/setup.bash && ros2 run ft_tilt_as2 mission.py \"$@\"' --"
+test-missions = { cmd = "bash -c 'source install/setup.bash && python3 ft_tilt_as2/scripts/test_missions.py \"$@\"' --", depends-on = ["build"] }

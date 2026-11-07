@@ -1,5 +1,5 @@
 """ft_tilt sim + Aerostack2: platform, ground-truth state estimator, motion controller with the
-ft_tilt plugin, take-off and land behaviours. Drone namespace: ft_tilt.
+ft_tilt plugin, take-off, go-to and land behaviours. Drone namespace: ft_tilt.
 
     pixi run as2 [gamma_deg:=107] [battery:=4s] [failure_gains:=mild] [headless:=false] [yaw:=0.0]
     pixi run mission            # in a second terminal
@@ -56,4 +56,5 @@ def generate_launch_description():
                      os.path.join(share, "config", "controller_available_modes.yaml")}]),
         behavior("takeoff", "takeoff_plugin_position"),
         behavior("land", "land_plugin_speed"),
+        behavior("go_to", "go_to_plugin_position"),
     ])

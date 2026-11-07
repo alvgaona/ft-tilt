@@ -1,0 +1,10 @@
+# ICRIS18 §V, Fig. 12-13: yaw steps both ways with motor 2 off. One direction is weaker.
+# Use battery:=4s.
+experiment_runner:
+  ros__parameters:
+    duration: 45.0
+    fault_time: 10.0
+    fault_motor: 2
+    fault_health: 0.0
+    yaw_ref_times: [20.0, 32.0]
+    yaw_ref_deg: [25.0, 0.0]

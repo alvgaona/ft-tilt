@@ -1,0 +1,29 @@
+[workspace]
+name = "ft-tilt"
+version = "0.1.0"
+description = "Fault-tolerant tilted-rotor hexacopter (Giribet et al.) simulated in Gazebo Harmonic"
+authors = ["Alvaro Gaona <alvgaona@gmail.com>"]
+channels = ["robostack-jazzy", "conda-forge"]
+platforms = ["linux-64", "osx-arm64"]
+
+[dependencies]
+ros-jazzy-ros-base = "*"
+ros-jazzy-ros-gz = "*"
+ros-jazzy-xacro = "*"
+ros-jazzy-actuator-msgs = "*"
+ros-jazzy-rosbag2 = "*"
+ros-jazzy-ament-cmake-gtest = "*"
+eigen = "*"
+colcon-common-extensions = "*"
+cmake = "*"
+ninja = "*"
+pkg-config = "*"
+c-compiler = "*"
+cxx-compiler = "*"
+
+[tasks]
+build = "colcon build --symlink-install --cmake-args -G Ninja -DCMAKE_BUILD_TYPE=Release"
+test = { cmd = "colcon test --event-handlers console_direct+ && colcon test-result --verbose", depends-on = ["build"] }
+# Extra launch arguments pass through, e.g. `pixi run sim gamma_deg:=90`.
+sim = { cmd = "bash -c 'source install/setup.bash && ros2 launch ft_tilt_bringup sim.launch.py \"$@\"' --", depends-on = ["build"] }
+experiment = { cmd = "bash -c 'source install/setup.bash && ros2 launch ft_tilt_bringup experiment.launch.py \"$@\"' --", depends-on = ["build"] }

@@ -1,0 +1,56 @@
+# ROS ⇄ Gazebo topics of the ft_tilt model. The plugin's interface is documented at the top
+# of ft_tilt_gazebo/src/ft_tilt_controller.cpp.
+- ros_topic_name: /clock
+  gz_topic_name: /clock
+  ros_type_name: rosgraph_msgs/msg/Clock
+  gz_type_name: gz.msgs.Clock
+  direction: GZ_TO_ROS
+
+# Commands
+- ros_topic_name: /ft_tilt/attitude_ref
+  gz_topic_name: /model/ft_tilt/attitude_ref
+  ros_type_name: geometry_msgs/msg/Vector3
+  gz_type_name: gz.msgs.Vector3d
+  direction: ROS_TO_GZ
+- ros_topic_name: /ft_tilt/thrust_ref
+  gz_topic_name: /model/ft_tilt/thrust_ref
+  ros_type_name: std_msgs/msg/Float64
+  gz_type_name: gz.msgs.Double
+  direction: ROS_TO_GZ
+- ros_topic_name: /ft_tilt/motor_health
+  gz_topic_name: /model/ft_tilt/motor_health
+  ros_type_name: actuator_msgs/msg/Actuators
+  gz_type_name: gz.msgs.Actuators
+  direction: ROS_TO_GZ
+- ros_topic_name: /ft_tilt/disturbance_torque
+  gz_topic_name: /model/ft_tilt/disturbance_torque
+  ros_type_name: geometry_msgs/msg/Vector3
+  gz_type_name: gz.msgs.Vector3d
+  direction: ROS_TO_GZ
+
+# Telemetry
+- ros_topic_name: /ft_tilt/pwm
+  gz_topic_name: /model/ft_tilt/pwm
+  ros_type_name: actuator_msgs/msg/Actuators
+  gz_type_name: gz.msgs.Actuators
+  direction: GZ_TO_ROS
+- ros_topic_name: /ft_tilt/attitude
+  gz_topic_name: /model/ft_tilt/attitude
+  ros_type_name: geometry_msgs/msg/Vector3
+  gz_type_name: gz.msgs.Vector3d
+  direction: GZ_TO_ROS
+- ros_topic_name: /ft_tilt/torque_cmd
+  gz_topic_name: /model/ft_tilt/torque_cmd
+  ros_type_name: geometry_msgs/msg/Vector3
+  gz_type_name: gz.msgs.Vector3d
+  direction: GZ_TO_ROS
+- ros_topic_name: /ft_tilt/allocation_margin
+  gz_topic_name: /model/ft_tilt/allocation_margin
+  ros_type_name: std_msgs/msg/Float64
+  gz_type_name: gz.msgs.Double
+  direction: GZ_TO_ROS
+- ros_topic_name: /ft_tilt/odometry
+  gz_topic_name: /model/ft_tilt/odometry
+  ros_type_name: nav_msgs/msg/Odometry
+  gz_type_name: gz.msgs.Odometry
+  direction: GZ_TO_ROS

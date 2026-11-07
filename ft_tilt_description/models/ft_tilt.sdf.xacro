@@ -1,0 +1,188 @@
+<?xml version="1.0"?>
+<!--
+  Tilted-rotor hexacopter (RPIC17 / ICRIS18), primitives only.
+  Render with: xacro ft_tilt.sdf.xacro gamma_deg:=107 failure_gains:=mild
+
+  Frame: FLU, origin at the centre of mass. Motor i (1..6) sits on the arm at (i-1)·60° from +x
+  toward +y. Its spin axis is cos(γ)·d̂ + sin(γ)·ẑ, so γ = 107° leans it 17° toward the centre
+  (arms tilted up, as on the real vehicle) and γ = 90° is the standard hexacopter.
+-->
+<sdf version="1.9" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg name="name" default="ft_tilt"/>
+  <xacro:arg name="gamma_deg" default="107"/>
+  <xacro:arg name="failure_gains" default="mild"/>
+  <xacro:arg name="battery" default="3s"/>
+
+  <!-- RPIC17 Table I and ICRIS18 §IV -->
+  <xacro:property name="tilt" value="${radians($(arg gamma_deg))}"/>
+  <xacro:property name="arm" value="0.26"/>
+  <xacro:property name="mass" value="2.1"/>
+  <xacro:property name="jxy" value="0.0476"/>
+  <!-- ICRIS18 identifies Jz = 0.1094, but Jx + Jy = 0.0952 < Jz is not a rigid body. Use
+       the flat-plate limit Jz ≈ Jx + Jy instead (roll/pitch values kept). -->
+  <xacro:property name="jz" value="${0.999 * 2 * jxy}"/>
+  <!-- battery:=3s is RPIC17 Table I (measured). With it the vehicle hovers on 5 motors with
+       motor 3 at ~96 % of F_M, which is why RPIC17 only tested a partial fault.
+       battery:=4s is ICRIS18's total-failure vehicle. The paper gives no numbers, so this is
+       an ESTIMATE from its Fig. 11: healthy motors hover at ~65 % PWM carrying ~5.4 N each,
+       giving k_f ≈ 0.083 N/% and F_M ≈ k_f·100 %. A typo in battery fails the render. -->
+  <xacro:property name="battery" value="$(arg battery)"/>
+  <xacro:unless value="${battery in ['3s', '4s']}">${xacro.fatal('battery must be 3s or 4s')}</xacro:unless>
+  <xacro:property name="kf" value="${0.0776 if battery == '3s' else 0.083}"/>  <!-- N per % PWM -->
+  <xacro:property name="max_force" value="${0.644 * 9.80665 if battery == '3s' else 8.3}"/>  <!-- F_M -->
+  <xacro:property name="kt_ratio" value="${0.0077 / 0.0776}"/>  <!-- k̃t = kt/kf (m), both batteries -->
+  <xacro:property name="motor_tau" value="${1 / 20.06}"/>  <!-- identified actuator pole p -->
+  <!-- Assumed: the papers give no rotor speed. Only the speed scale depends on this. -->
+  <xacro:property name="max_rot_velocity" value="1000.0"/>
+  <xacro:property name="motor_constant" value="${max_force / max_rot_velocity**2}"/>
+
+  <xacro:property name="rotor_mass" value="0.01"/>
+  <xacro:property name="base_mass" value="${mass - 6 * rotor_mass}"/>
+  <!-- Base inertia so that base + rotor point masses give the identified Jx = Jy, Jz. -->
+  <xacro:property name="base_ixx" value="${jxy - 3 * rotor_mass * arm**2}"/>
+  <xacro:property name="base_izz" value="${jz - 6 * rotor_mass * arm**2}"/>
+
+  <xacro:macro name="rotor" params="i spin">
+    <xacro:property name="th" value="${(i - 1) * pi / 3}"/>
+    <link name="rotor_${i}">
+      <!-- z axis = thrust axis; the motor model pushes along it. -->
+      <pose relative_to="base_link">${arm * cos(th)} ${arm * sin(th)} 0 0 ${pi / 2 - tilt} ${th}</pose>
+      <inertial>
+        <mass>${rotor_mass}</mass>
+        <inertia>
+          <ixx>1e-5</ixx><iyy>1e-5</iyy><izz>2e-5</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <!-- 9545 prop (241 mm), two blades so the spin shows. Motor 2 is red. -->
+      <visual name="prop">
+        <pose>0 0 0.012 0 0 0</pose>
+        <geometry><box><size>0.241 0.022 0.004</size></box></geometry>
+        <material>
+          <ambient>${'0.8 0.1 0.1 1' if i == 2 else '0.1 0.1 0.1 1'}</ambient>
+          <diffuse>${'0.8 0.1 0.1 1' if i == 2 else '0.1 0.1 0.1 1'}</diffuse>
+        </material>
+      </visual>
+      <visual name="hub">
+        <pose>0 0 0.012 0 0 0</pose>
+        <geometry><cylinder><radius>0.008</radius><length>0.012</length></cylinder></geometry>
+        <material><ambient>0.6 0.6 0.6 1</ambient><diffuse>0.6 0.6 0.6 1</diffuse></material>
+      </visual>
+    </link>
+    <joint name="rotor_${i}_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>rotor_${i}</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit><lower>-1e16</lower><upper>1e16</upper></limit>
+      </axis>
+    </joint>
+    <!-- Gazebo: cw → reaction torque +k̃t·f about the thrust axis, i.e. spin = +1. -->
+    <plugin filename="gz-sim-multicopter-motor-model-system"
+            name="gz::sim::systems::MulticopterMotorModel">
+      <jointName>rotor_${i}_joint</jointName>
+      <linkName>rotor_${i}</linkName>
+      <turningDirection>${'cw' if spin > 0 else 'ccw'}</turningDirection>
+      <timeConstantUp>${motor_tau}</timeConstantUp>
+      <timeConstantDown>${motor_tau}</timeConstantDown>
+      <maxRotVelocity>${max_rot_velocity}</maxRotVelocity>
+      <motorConstant>${motor_constant}</motorConstant>
+      <momentConstant>${kt_ratio}</momentConstant>
+      <actuator_number>${i - 1}</actuator_number>
+      <commandSubTopic>command/motor_speed</commandSubTopic>
+      <motorSpeedPubTopic>motor_speed/${i}</motorSpeedPubTopic>
+      <rotorDragCoefficient>0</rotorDragCoefficient>
+      <rollingMomentCoefficient>0</rollingMomentCoefficient>
+      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      <motorType>velocity</motorType>
+    </plugin>
+  </xacro:macro>
+
+  <xacro:macro name="motor_mount" params="i">
+    <xacro:property name="th" value="${(i - 1) * pi / 3}"/>
+    <!-- 3D-printed adapter and 2212 motor, tilted with the rotor axis (RPIC17 Fig. 4). -->
+    <xacro:property name="ax" value="${cos(tilt) * cos(th)}"/>
+    <xacro:property name="ay" value="${cos(tilt) * sin(th)}"/>
+    <xacro:property name="az" value="${sin(tilt)}"/>
+    <visual name="motor_${i}">
+      <pose>${arm * cos(th) - 0.008 * ax} ${arm * sin(th) - 0.008 * ay} ${-0.008 * az} 0 ${pi / 2 - tilt} ${th}</pose>
+      <geometry><cylinder><radius>0.014</radius><length>0.026</length></cylinder></geometry>
+      <material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+    </visual>
+    <visual name="adapter_${i}">
+      <pose>${arm * cos(th) - 0.026 * ax} ${arm * sin(th) - 0.026 * ay} ${-0.026 * az} 0 ${pi / 2 - tilt} ${th}</pose>
+      <geometry><box><size>0.04 0.03 0.012</size></box></geometry>
+      <material><ambient>0.9 0.5 0.1 1</ambient><diffuse>0.9 0.5 0.1 1</diffuse></material>
+    </visual>
+  </xacro:macro>
+
+  <model name="$(arg name)">
+    <link name="base_link">
+      <inertial>
+        <mass>${base_mass}</mass>
+        <inertia>
+          <ixx>${base_ixx}</ixx><iyy>${base_ixx}</iyy><izz>${base_izz}</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <collision name="body_collision">
+        <pose>0 0 -0.115 0 0 0</pose>  <!-- down to the F550 skids at z = -0.215 -->
+        <geometry><cylinder><radius>0.15</radius><length>0.2</length></cylinder></geometry>
+      </collision>
+      <!-- DJI F550 frame, "DJI Flame Wheel F550" by An Dré (Printables 1436460, public domain).
+           Motors and props removed, rotated -30° so arm i holds motor i, scaled so the motor
+           pads sit at the papers' 0.26 m (F550: 0.273 m). Arm 1 (+x) is red. -->
+      <visual name="f550_body">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/f550_body.stl</uri></mesh></geometry>
+        <material><ambient>0.25 0.25 0.25 1</ambient><diffuse>0.25 0.25 0.25 1</diffuse></material>
+      </visual>
+      <visual name="f550_arm1">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/f550_arm1.stl</uri></mesh></geometry>
+        <material><ambient>0.8 0.1 0.1 1</ambient><diffuse>0.8 0.1 0.1 1</diffuse></material>
+      </visual>
+      <visual name="f550_arms">
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/f550_arms.stl</uri></mesh></geometry>
+        <material><ambient>0.9 0.9 0.9 1</ambient><diffuse>0.9 0.9 0.9 1</diffuse></material>
+      </visual>
+      <xacro:motor_mount i="1"/>
+      <xacro:motor_mount i="2"/>
+      <xacro:motor_mount i="3"/>
+      <xacro:motor_mount i="4"/>
+      <xacro:motor_mount i="5"/>
+      <xacro:motor_mount i="6"/>
+    </link>
+
+    <!-- Spin (-1)^(i+1): motor 1 cw, then alternating. -->
+    <xacro:rotor i="1" spin="1"/>
+    <xacro:rotor i="2" spin="-1"/>
+    <xacro:rotor i="3" spin="1"/>
+    <xacro:rotor i="4" spin="-1"/>
+    <xacro:rotor i="5" spin="1"/>
+    <xacro:rotor i="6" spin="-1"/>
+
+    <plugin filename="ft_tilt_controller" name="ft_tilt::FtTiltController">
+      <base_link>base_link</base_link>
+      <rotor><link>rotor_1</link><spin>1</spin></rotor>
+      <rotor><link>rotor_2</link><spin>-1</spin></rotor>
+      <rotor><link>rotor_3</link><spin>1</spin></rotor>
+      <rotor><link>rotor_4</link><spin>-1</spin></rotor>
+      <rotor><link>rotor_5</link><spin>1</spin></rotor>
+      <rotor><link>rotor_6</link><spin>-1</spin></rotor>
+      <kt_ratio>${kt_ratio}</kt_ratio>
+      <kf>${kf}</kf>
+      <max_force>${max_force}</max_force>
+      <motor_constant>${motor_constant}</motor_constant>
+      <pwm_floor>14</pwm_floor>
+      <rate>200</rate>
+      <failure_gains>$(arg failure_gains)</failure_gains>
+    </plugin>
+
+    <!-- Ground-truth odometry for the experiment runner's altitude hold. -->
+    <plugin filename="gz-sim-odometry-publisher-system"
+            name="gz::sim::systems::OdometryPublisher">
+      <dimensions>3</dimensions>
+      <odom_publish_frequency>200</odom_publish_frequency>
+      <robot_base_frame>base_link</robot_base_frame>
+    </plugin>
+  </model>
+</sdf>

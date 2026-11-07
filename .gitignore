@@ -1,0 +1,11 @@
+.DS_Store
+
+# pixi / colcon
+.pixi/
+build/
+install/
+log/
+bags/
+
+# raw F550 download (trimmed meshes live in ft_tilt_description/meshes)
+dji-flame-wheel-f550-model_files/

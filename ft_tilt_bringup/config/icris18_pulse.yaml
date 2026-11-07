@@ -1,0 +1,13 @@
+# ICRIS18 §IV, Fig. 6-7: 1 N·m pitch disturbance for 10 s with motor 2 off. Use battery:=4s.
+# Run once with failure_gains:=aggressive and once with failure_gains:=mild.
+# The paper gives no sign. With motor 2 off the controller can make My in [-0.44, +2.9] N·m
+# at hover (derived), so only a -My disturbance (rejected with +My) is survivable.
+experiment_runner:
+  ros__parameters:
+    duration: 40.0
+    fault_time: 10.0
+    fault_motor: 2
+    fault_health: 0.0
+    disturbance_start: 20.0
+    disturbance_end: 30.0
+    disturbance_torque: [0.0, -1.0, 0.0]

@@ -49,7 +49,7 @@ public:
   bool ownSetArmingState(bool state) override
   {
     if (!state) {
-      motorsOff();
+      motors_off();
     }
     return true;  // motors start with the first thrust command
   }
@@ -79,7 +79,7 @@ public:
     return true;
   }
 
-  void ownKillSwitch() override {motorsOff();}
+  void ownKillSwitch() override {motors_off();}
 
   void ownStopPlatform() override
   {
@@ -90,7 +90,7 @@ public:
   }
 
 private:
-  void motorsOff()
+  void motors_off()
   {
     std_msgs::msg::Float64 off;
     off.data = -1.0;  // the gz plugin switches the motors off on a negative thrust

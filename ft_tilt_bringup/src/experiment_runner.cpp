@@ -63,11 +63,11 @@ public:
     dist_pub_ = create_publisher<geometry_msgs::msg::Vector3>("/ft_tilt/disturbance_torque", 10);
     odom_sub_ = create_subscription<nav_msgs::msg::Odometry>(
       "/ft_tilt/odometry", 10, [this](nav_msgs::msg::Odometry::ConstSharedPtr m) {odom_ = *m;});
-    timer_ = rclcpp::create_timer(this, get_clock(), 10ms, [this] {Step();});
+    timer_ = rclcpp::create_timer(this, get_clock(), 10ms, [this] {step();});
   }
 
 private:
-  void Step()
+  void step()
   {
     const rclcpp::Time now = get_clock()->now();
     if (now.nanoseconds() == 0 || !odom_) {
@@ -89,13 +89,13 @@ private:
     actuator_msgs::msg::Actuators health;
     health.header.stamp = now;
     health.normalized.assign(6, 1.0);
-    if (Active(t, fault_time_, fault_clear_time_)) {
+    if (active(t, fault_time_, fault_clear_time_)) {
       health.normalized[fault_motor_ - 1] = fault_health_;
     }
     health_pub_->publish(health);
 
     geometry_msgs::msg::Vector3 dist;
-    if (Active(t, dist_start_, dist_end_)) {
+    if (active(t, dist_start_, dist_end_)) {
       dist.x = dist_torque_[0];
       dist.y = dist_torque_[1];
       dist.z = dist_torque_[2];
@@ -139,7 +139,7 @@ private:
     thrust_pub_->publish(thrust);
   }
 
-  static bool Active(double t, double start, double end)
+  static bool active(double t, double start, double end)
   {
     return start >= 0.0 && t >= start && (end < 0.0 || t < end);
   }

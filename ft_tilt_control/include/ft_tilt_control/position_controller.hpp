@@ -28,7 +28,7 @@ struct AttitudeThrust
 class PositionController
 {
 public:
-  explicit PositionController(const PositionGains & gains = {}) : g_(gains) {}
+  explicit PositionController(const PositionGains & gains = {}) : gains_(gains) {}
 
   void reset() {integral_.setZero();}
 
@@ -44,29 +44,29 @@ public:
     e.x() = std::clamp(e.x(), -2.0, 2.0);
     e.y() = std::clamp(e.y(), -2.0, 2.0);
     // Anti-windup: integral term ≤ 0.5 m/s² sideways, ≤ 1 m/s² (~10 % of weight) vertically.
-    const double lim = 0.5 / std::max(g_.ki_xy, 1e-9), lim_z = 1.0 / std::max(g_.ki_z, 1e-9);
+    const double lim = 0.5 / std::max(gains_.ki_xy, 1e-9), lim_z = 1.0 / std::max(gains_.ki_z, 1e-9);
     integral_ += e * dt;
     integral_.x() = std::clamp(integral_.x(), -lim, lim);
     integral_.y() = std::clamp(integral_.y(), -lim, lim);
     integral_.z() = std::clamp(integral_.z(), -lim_z, lim_z);
 
     const Eigen::Vector3d dv = v_ref - v;
-    const double ax = g_.kp_xy * e.x() + g_.ki_xy * integral_.x() + g_.kd_xy * dv.x();
-    const double ay = g_.kp_xy * e.y() + g_.ki_xy * integral_.y() + g_.kd_xy * dv.y();
-    const double az = g_.kp_z * e.z() + g_.ki_z * integral_.z() + g_.kd_z * dv.z();
+    const double ax = gains_.kp_xy * e.x() + gains_.ki_xy * integral_.x() + gains_.kd_xy * dv.x();
+    const double ay = gains_.kp_xy * e.y() + gains_.ki_xy * integral_.y() + gains_.kd_xy * dv.y();
+    const double az = gains_.kp_z * e.z() + gains_.ki_z * integral_.z() + gains_.kd_z * dv.z();
 
     const double fwd = std::cos(yaw) * ax + std::sin(yaw) * ay;
     const double left = -std::sin(yaw) * ax + std::cos(yaw) * ay;
     return {
-      std::clamp(-std::atan2(left, g), -g_.max_tilt, g_.max_tilt),  // +roll → −y
-      std::clamp(std::atan2(fwd, g), -g_.max_tilt, g_.max_tilt),    // +pitch → +x
-      std::clamp(g_.mass * (g + az) / std::max(cos_tilt, 0.5), 0.0, g_.max_thrust)};
+      std::clamp(-std::atan2(left, g), -gains_.max_tilt, gains_.max_tilt),  // +roll → −y
+      std::clamp(std::atan2(fwd, g), -gains_.max_tilt, gains_.max_tilt),    // +pitch → +x
+      std::clamp(gains_.mass * (g + az) / std::max(cos_tilt, 0.5), 0.0, gains_.max_thrust)};
   }
 
-  PositionGains & gains() {return g_;}
+  PositionGains & gains() {return gains_;}
 
 private:
-  PositionGains g_;
+  PositionGains gains_;
   Eigen::Vector3d integral_ = Eigen::Vector3d::Zero();
 };
 

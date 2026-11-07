@@ -109,10 +109,10 @@ public:
           << ", allocation: " << allocation << "\n";
 
     const std::string ns = "/model/" + model_.Name(ecm) + "/";
-    node_.Subscribe(ns + "attitude_ref", &FtTiltController::OnAttitudeRef, this);
-    node_.Subscribe(ns + "thrust_ref", &FtTiltController::OnThrustRef, this);
-    node_.Subscribe(ns + "motor_health", &FtTiltController::OnMotorHealth, this);
-    node_.Subscribe(ns + "disturbance_torque", &FtTiltController::OnDisturbance, this);
+    node_.Subscribe(ns + "attitude_ref", &FtTiltController::on_attitude_ref, this);
+    node_.Subscribe(ns + "thrust_ref", &FtTiltController::on_thrust_ref, this);
+    node_.Subscribe(ns + "motor_health", &FtTiltController::on_motor_health, this);
+    node_.Subscribe(ns + "disturbance_torque", &FtTiltController::on_disturbance, this);
     pwm_pub_ = node_.Advertise<gz::msgs::Actuators>(ns + "pwm");
     attitude_pub_ = node_.Advertise<gz::msgs::Vector3d>(ns + "attitude");
     torque_pub_ = node_.Advertise<gz::msgs::Vector3d>(ns + "torque_cmd");
@@ -185,13 +185,13 @@ public:
     for (int i = 0; i < kNumRotors; ++i) {
       rotor_cmd_.set_velocity(i, std::sqrt(force(i) / motor_constant_));
     }
-    SetRotorCommand(ecm);
-    Publish(info, rpy, torque, force, margin);
+    set_rotor_command(ecm);
+    publish(info, rpy, torque, force, margin);
   }
 
 private:
   // A NaN would reach the rotor speeds and the physics, so non-finite messages are dropped.
-  static bool Finite(const std::vector<double> & values, const char * topic)
+  static bool all_finite(const std::vector<double> & values, const char * topic)
   {
     for (double v : values) {
       if (!std::isfinite(v)) {
@@ -202,31 +202,31 @@ private:
     return true;
   }
 
-  void OnAttitudeRef(const gz::msgs::Vector3d & msg)
+  void on_attitude_ref(const gz::msgs::Vector3d & msg)
   {
-    if (!Finite({msg.x(), msg.y(), msg.z()}, "attitude_ref")) {
+    if (!all_finite({msg.x(), msg.y(), msg.z()}, "attitude_ref")) {
       return;
     }
     std::lock_guard<std::mutex> lock(mutex_);
     rpy_ref_ = {msg.x(), msg.y(), msg.z()};
   }
 
-  void OnThrustRef(const gz::msgs::Double & msg)
+  void on_thrust_ref(const gz::msgs::Double & msg)
   {
-    if (!Finite({msg.data()}, "thrust_ref")) {
+    if (!all_finite({msg.data()}, "thrust_ref")) {
       return;
     }
     std::lock_guard<std::mutex> lock(mutex_);
     thrust_ref_ = msg.data() < 0.0 ? std::nullopt : std::optional<double>(msg.data());
   }
 
-  void OnMotorHealth(const gz::msgs::Actuators & msg)
+  void on_motor_health(const gz::msgs::Actuators & msg)
   {
     if (msg.normalized_size() != kNumRotors) {
       gzerr << "motor_health needs 6 normalized values, got " << msg.normalized_size() << ".\n";
       return;
     }
-    if (!Finite(std::vector<double>(msg.normalized().begin(), msg.normalized().end()), "motor_health")) {
+    if (!all_finite(std::vector<double>(msg.normalized().begin(), msg.normalized().end()), "motor_health")) {
       return;
     }
     std::lock_guard<std::mutex> lock(mutex_);
@@ -235,9 +235,9 @@ private:
     }
   }
 
-  void OnDisturbance(const gz::msgs::Vector3d & msg)
+  void on_disturbance(const gz::msgs::Vector3d & msg)
   {
-    if (!Finite({msg.x(), msg.y(), msg.z()}, "disturbance_torque")) {
+    if (!all_finite({msg.x(), msg.y(), msg.z()}, "disturbance_torque")) {
       return;
     }
     std::lock_guard<std::mutex> lock(mutex_);
@@ -245,7 +245,7 @@ private:
   }
 
   // Same mechanism as Gazebo's multicopter controllers: the motor model reads this component.
-  void SetRotorCommand(EntityComponentManager & ecm)
+  void set_rotor_command(EntityComponentManager & ecm)
   {
     auto comp = ecm.Component<gz::sim::components::Actuators>(model_.Entity());
     if (!comp) {
@@ -258,7 +258,7 @@ private:
       gz::sim::ComponentState::PeriodicChange);
   }
 
-  void Publish(
+  void publish(
     const gz::sim::UpdateInfo & info, const Eigen::Vector3d & rpy, const Eigen::Vector3d & torque,
     const Vector6d & force, double margin)
   {

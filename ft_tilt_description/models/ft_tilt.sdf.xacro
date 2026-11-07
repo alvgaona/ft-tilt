@@ -131,10 +131,19 @@
       <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/motor_stator.stl</uri></mesh></geometry>
       <material><ambient>0.72 0.45 0.2 1</ambient><diffuse>0.72 0.45 0.2 1</diffuse></material>
     </visual>
+    <!-- 17° printed wedge (meshes/adapter.stl, built for 107°, turned 180° for 73°); other γ get
+         a spacer square to the axis (flat at 90°). -->
+    <xacro:property name="wedge" value="${$(arg gamma_deg) in [73, 107]}"/>
     <visual name="adapter_${i}">
-      <pose>${arm * cos(th) - 0.0313 * ax} ${arm * sin(th) - 0.0313 * ay} ${-0.0313 * az} 0 ${pi / 2 - tilt} ${th}</pose>
-      <geometry><box><size>0.04 0.03 0.010</size></box></geometry>
-      <material><ambient>0.9 0.5 0.1 1</ambient><diffuse>0.9 0.5 0.1 1</diffuse></material>
+      <xacro:if value="${wedge}">
+        <pose>${arm * cos(th)} ${arm * sin(th)} 0 0 0 ${th + (0 if $(arg gamma_deg) > 90 else pi)}</pose>
+        <geometry><mesh><uri>file://$(find ft_tilt_description)/meshes/adapter.stl</uri></mesh></geometry>
+      </xacro:if>
+      <xacro:unless value="${wedge}">
+        <pose>${arm * cos(th) - 0.0313 * ax} ${arm * sin(th) - 0.0313 * ay} ${-0.0313 * az} 0 ${pi / 2 - tilt} ${th}</pose>
+        <geometry><box><size>0.04 0.03 0.010</size></box></geometry>
+      </xacro:unless>
+      <material><ambient>0.06 0.06 0.06 1</ambient><diffuse>0.06 0.06 0.06 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
     </visual>
   </xacro:macro>
 

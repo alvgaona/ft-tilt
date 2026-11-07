@@ -12,3 +12,7 @@ dji-flame-wheel-f550-model_files/
 
 # commitlint (pixi run -e lint)
 node_modules/
+
+# Kept locally, not published: project spec for agents and the papers (publishers' copyright)
+/AGENTS.md
+/*.pdf

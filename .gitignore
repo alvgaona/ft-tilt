@@ -16,3 +16,7 @@ node_modules/
 # Kept locally, not published: project spec for agents and the papers (publishers' copyright)
 /AGENTS.md
 /*.pdf
+
+# Kept locally: scripts that generate the meshes and ground textures
+ft_tilt_description/tools/
+ft_tilt_bringup/tools/

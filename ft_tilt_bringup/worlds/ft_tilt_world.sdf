@@ -12,7 +12,7 @@
     <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
     <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
 
-    <!-- Scenery is visual only (models/, tools/make_ground.py): the physics is the same flat plane. -->
+    <!-- Scenery is visual only (models/): the physics is the same flat plane. -->
     <scene>
       <ambient>0.7 0.7 0.72 1</ambient>
       <background>0.62 0.76 0.92 1</background>

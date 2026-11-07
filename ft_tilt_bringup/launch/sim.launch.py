@@ -7,7 +7,7 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess
+from launch.actions import AppendEnvironmentVariable, DeclareLaunchArgument, ExecuteProcess
 from launch.conditions import UnlessCondition
 from launch.substitutions import Command, LaunchConfiguration
 from launch_ros.actions import Node
@@ -57,6 +57,8 @@ def generate_launch_description() -> LaunchDescription:
             ),
             DeclareLaunchArgument("headless", default_value="false"),
             DeclareLaunchArgument("yaw", default_value="0.0", description="Spawn yaw (rad)"),
+            # Scenery models (trees, grass) used by the world as model://
+            AppendEnvironmentVariable("GZ_SIM_RESOURCE_PATH", os.path.join(bringup, "models")),
             ExecuteProcess(
                 cmd=["gz", "sim", "-r", "-s", "-v", "3",
                      os.path.join(bringup, "worlds", "ft_tilt_world.sdf")],

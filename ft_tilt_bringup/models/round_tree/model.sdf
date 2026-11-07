@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<sdf version="1.11">
+  <!-- Low-poly broadleaf tree, ~5 m. Visual only: scenery, nothing flies near it. -->
+  <model name="round_tree">
+    <static>true</static>
+    <link name="link">
+      <visual name="trunk">
+        <pose>0 0 1.1 0 0 0</pose>
+        <geometry><cylinder><radius>0.18</radius><length>2.2</length></cylinder></geometry>
+        <material><ambient>0.3 0.2 0.12 1</ambient><diffuse>0.38 0.26 0.15 1</diffuse></material>
+      </visual>
+      <visual name="canopy">
+        <pose>0 0 3.3 0 0 0</pose>
+        <geometry><ellipsoid><radii>1.6 1.6 1.8</radii></ellipsoid></geometry>
+        <material><ambient>0.12 0.28 0.08 1</ambient><diffuse>0.18 0.4 0.12 1</diffuse></material>
+      </visual>
+      <visual name="side">
+        <pose>0.8 0.4 2.8 0 0 0</pose>
+        <geometry><ellipsoid><radii>1.0 1.0 1.0</radii></ellipsoid></geometry>
+        <material><ambient>0.14 0.3 0.09 1</ambient><diffuse>0.2 0.43 0.13 1</diffuse></material>
+      </visual>
+    </link>
+  </model>
+</sdf>

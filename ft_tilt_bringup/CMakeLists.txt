@@ -29,6 +29,6 @@ endif()
 target_compile_options(experiment_runner PRIVATE -Wall -Wextra -Wpedantic)
 
 install(TARGETS experiment_runner DESTINATION lib/${PROJECT_NAME})
-install(DIRECTORY launch config worlds DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY launch config worlds models DESTINATION share/${PROJECT_NAME})
 
 ament_package()

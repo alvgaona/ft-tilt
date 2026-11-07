@@ -13,10 +13,12 @@ Past 60° of tilt the vehicle is flipping: the motors are cut (kill switch) and 
 """
 import argparse
 import math
+import threading
 import time
 
 import rclpy
 from actuator_msgs.msg import Actuators
+from as2_msgs.msg import AlertEvent
 from as2_python_api.drone_interface import DroneInterface
 
 MAX_TILT_DEG, MAX_YAW_ERR, CRASH_TILT_DEG = 15.0, 0.2, 60.0
@@ -71,7 +73,13 @@ def fly(drone, args, stats):
         if tilt > CRASH_TILT_DEG and not stats["crashed"]:  # flipping: cut the motors
             stats["crashed"] = True
             print(f"crash: tilt {tilt:.0f}deg, kill switch", flush=True)
-            drone.send_emergency_killswitch_to_aircraft()
+            # A blocking go_to/land would wait forever for a flipped vehicle. stop() is a blocking
+            # service call, so not from this executor thread.
+            threading.Thread(target=lambda: [b.stop() for b in (drone.takeoff, drone.go_to, drone.land)],
+                             daemon=True).start()
+        if stats["crashed"]:
+            # The API's send_emergency_killswitch_to_aircraft() loops forever; it would freeze this thread.
+            drone.alert_pub.publish(AlertEvent(alert=AlertEvent.KILL_SWITCH))
 
     def hold(seconds):  # False once crashed
         end = time.time() + seconds

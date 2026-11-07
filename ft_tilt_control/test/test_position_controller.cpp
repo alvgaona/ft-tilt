@@ -48,3 +48,15 @@ TEST(PositionController, VelocityFeedforwardDescends)
   const auto out = c.update({0, 0, 1}, {0, 0, -0.5}, {0, 0, 1}, Vector3d::Zero(), 0.0, 1.0, 0.01);
   EXPECT_NEAR(out.thrust, 2.1 * (9.80665 - 3.0 * 0.5), 1e-9);
 }
+
+TEST(PositionController, VerticalIntegralIsCapped)
+{
+  // Sitting on the ground while the reference is 1 m below (landing) for a minute: once back on
+  // the reference, the integral costs at most 1 m/s² of thrust.
+  PositionController c;
+  for (int i = 0; i < 6000; ++i) {
+    c.update({0, 0, -1}, Vector3d::Zero(), {0, 0, 0}, Vector3d::Zero(), 0.0, 1.0, 0.01);
+  }
+  const auto out = c.update({0, 0, 0}, Vector3d::Zero(), {0, 0, 0}, Vector3d::Zero(), 0.0, 1.0, 0.01);
+  EXPECT_NEAR(out.thrust, 2.1 * (9.80665 - 1.0), 1e-6);
+}

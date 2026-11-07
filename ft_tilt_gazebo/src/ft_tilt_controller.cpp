@@ -22,6 +22,7 @@
 #include <mutex>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include <gz/common/Console.hh>
 #include <gz/math/Pose3.hh>
@@ -175,7 +176,7 @@ public:
       Vector6d lower, upper;
       for (int i = 0; i < kNumRotors; ++i) {
         upper(i) = health(i) * max_force_;  // RPIC17 §V: "limited to 40% of its maximum thrust"
-        lower(i) = upper(i) > 0.0 ? floor_ : 0.0;  // never stop a working motor (ICRIS18 §V)
+        lower(i) = std::min(floor_, upper(i));  // never stop a working motor (ICRIS18 §V)
       }
       const Eigen::Vector4d wrench(torque.x(), torque.y(), torque.z(), *thrust);
       const auto alloc = allocate(a_, wrench, lower, upper, fault && null_space_on_fault_);
@@ -193,14 +194,32 @@ public:
   }
 
 private:
+  // A NaN would reach the rotor speeds and the physics, so non-finite messages are dropped.
+  static bool Finite(const std::vector<double> & values, const char * topic)
+  {
+    for (double v : values) {
+      if (!std::isfinite(v)) {
+        gzerr << topic << ": ignoring a non-finite value.\n";
+        return false;
+      }
+    }
+    return true;
+  }
+
   void OnAttitudeRef(const gz::msgs::Vector3d & msg)
   {
+    if (!Finite({msg.x(), msg.y(), msg.z()}, "attitude_ref")) {
+      return;
+    }
     std::lock_guard<std::mutex> lock(mutex_);
     rpy_ref_ = {msg.x(), msg.y(), msg.z()};
   }
 
   void OnThrustRef(const gz::msgs::Double & msg)
   {
+    if (!Finite({msg.data()}, "thrust_ref")) {
+      return;
+    }
     std::lock_guard<std::mutex> lock(mutex_);
     thrust_ref_ = msg.data() < 0.0 ? std::nullopt : std::optional<double>(msg.data());
   }
@@ -211,6 +230,9 @@ private:
       gzerr << "motor_health needs 6 normalized values, got " << msg.normalized_size() << ".\n";
       return;
     }
+    if (!Finite(std::vector<double>(msg.normalized().begin(), msg.normalized().end()), "motor_health")) {
+      return;
+    }
     std::lock_guard<std::mutex> lock(mutex_);
     for (int i = 0; i < kNumRotors; ++i) {
       health_(i) = std::clamp(msg.normalized(i), 0.0, 1.0);
@@ -219,6 +241,9 @@ private:
 
   void OnDisturbance(const gz::msgs::Vector3d & msg)
   {
+    if (!Finite({msg.x(), msg.y(), msg.z()}, "disturbance_torque")) {
+      return;
+    }
     std::lock_guard<std::mutex> lock(mutex_);
     disturbance_ = {msg.x(), msg.y(), msg.z()};
   }

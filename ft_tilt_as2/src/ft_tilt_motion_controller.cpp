@@ -134,8 +134,9 @@ public:
 
   void reset() override
   {
+    // Aerostack2 calls this on every mode change. Keep the position integral: after a fault it
+    // holds the correction for the tilted rotors' sideways push, and landing would drift without it.
     ControllerBase::reset();
-    position_.reset();
     carrot_.reset();
   }
 

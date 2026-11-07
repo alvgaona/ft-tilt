@@ -12,5 +12,5 @@ Scripts that generate the visual meshes in `../meshes`. Run from this directory,
 | `jetson_build.py` | `jetson_*.stl` (carrier, Orin NX module, cooler) | `B -b -P jetson_build.py -- jnx42 jnx42/colours.txt ../meshes` |
 | `open_jetson.py` | opens the Jetson meshes in Blender, grouped in collections | `B -P open_jetson.py [-- jetson.blend]` |
 
-Inputs (F550 STL, JNX42 STEP) are not in the repo. The Auvidea STEP has no stated licence; check
-it before publishing the `jetson_*` carrier meshes.
+Inputs (F550 STL, JNX42 STEP) are not in the repo. The Auvidea STEP has no licence anywhere (all
+rights reserved): replace the `jetson_*` carrier meshes before publishing (AGENTS.md, Next steps).

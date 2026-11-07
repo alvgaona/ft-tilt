@@ -46,10 +46,12 @@ public:
     Eigen::Vector3d e = p_ref - p;
     e.x() = std::clamp(e.x(), -2.0, 2.0);
     e.y() = std::clamp(e.y(), -2.0, 2.0);
-    const double lim = 0.5 / std::max(g_.ki_xy, 1e-9);  // integral term ≤ 0.5 m/s² (anti-windup)
+    // Anti-windup: integral term ≤ 0.5 m/s² sideways, ≤ 1 m/s² (~10 % of weight) vertically.
+    const double lim = 0.5 / std::max(g_.ki_xy, 1e-9), lim_z = 1.0 / std::max(g_.ki_z, 1e-9);
     integral_ += e * dt;
     integral_.x() = std::clamp(integral_.x(), -lim, lim);
     integral_.y() = std::clamp(integral_.y(), -lim, lim);
+    integral_.z() = std::clamp(integral_.z(), -lim_z, lim_z);
 
     const Eigen::Vector3d dv = v_ref - v;
     const double ax = g_.kp_xy * e.x() + g_.ki_xy * integral_.x() + g_.kd_xy * dv.x();

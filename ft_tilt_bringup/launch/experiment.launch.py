@@ -39,6 +39,15 @@ def generate_launch_description() -> LaunchDescription:
         output="screen",
     )
 
+    # Exits at once if bags/<name> already exists (Jazzy has no overwrite); then stop the whole run,
+    # or the experiment runs unrecorded and the plots keep the old bag.
+    recorder = ExecuteProcess(
+        cmd=[
+            "ros2", "bag", "record", "--use-sim-time", "-e", "/ft_tilt/.*",
+            "-o", ["bags/", config, "_gamma", gamma, "_", gains, "_", battery, "_", allocation],
+        ],
+        output="screen",
+    )
     return LaunchDescription(
         [
             DeclareLaunchArgument(
@@ -62,15 +71,12 @@ def generate_launch_description() -> LaunchDescription:
                 }.items(),
             ),
             runner,
-            ExecuteProcess(
-                cmd=[
-                    "ros2", "bag", "record", "--use-sim-time", "-e", "/ft_tilt/.*",
-                    "-o", ["bags/", config, "_gamma", gamma, "_", gains, "_", battery, "_", allocation],
-                ],
-                output="screen",
-            ),
+            recorder,
             RegisterEventHandler(
                 OnProcessExit(target_action=runner, on_exit=[EmitEvent(event=Shutdown())])
+            ),
+            RegisterEventHandler(
+                OnProcessExit(target_action=recorder, on_exit=[EmitEvent(event=Shutdown())])
             ),
         ]
     )

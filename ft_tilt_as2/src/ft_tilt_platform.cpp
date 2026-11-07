@@ -62,9 +62,8 @@ public:
   bool ownSetPlatformControlMode(const as2_msgs::msg::ControlMode & mode) override
   {
     RCLCPP_INFO(get_logger(), "Control mode: [%s]", as2::control_mode::controlModeToString(mode).c_str());
-    // shortcut: odom yaw = gz world yaw only while the vehicle spawns at yaw 0; use the
-    // earth → odom transform when it doesn't.
-    setCommandPoseFrameId(getOdomFrameId());
+    // The gz plugin reads attitude in the gz world (earth); Aerostack2 converts from odom.
+    setCommandPoseFrameId("earth");
     return mode.control_mode == as2_msgs::msg::ControlMode::ATTITUDE;
   }
 

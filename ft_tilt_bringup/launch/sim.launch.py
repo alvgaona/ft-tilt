@@ -56,6 +56,7 @@ def generate_launch_description() -> LaunchDescription:
                 description="After a fault: null_space (fault-aware) | pinv_clamp (pseudo-inverse + clamp)",
             ),
             DeclareLaunchArgument("headless", default_value="false"),
+            DeclareLaunchArgument("yaw", default_value="0.0", description="Spawn yaw (rad)"),
             ExecuteProcess(
                 cmd=["gz", "sim", "-r", "-s", "-v", "3",
                      os.path.join(bringup, "worlds", "ft_tilt_world.sdf")],
@@ -83,7 +84,8 @@ def generate_launch_description() -> LaunchDescription:
                 package="ros_gz_sim",
                 executable="create",
                 parameters=[
-                    {"world": "ft_tilt_world", "name": "ft_tilt", "string": model, "z": 0.22}
+                    {"world": "ft_tilt_world", "name": "ft_tilt", "string": model, "z": 0.22,
+                     "Y": ParameterValue(LaunchConfiguration("yaw"), value_type=float)}
                 ],
                 output="screen",
             ),

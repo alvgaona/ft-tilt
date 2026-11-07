@@ -23,7 +23,6 @@ def main():
 
     rclpy.init()
     drone = DroneInterface(drone_id="ft_tilt", use_sim_time=True)
-    drone.load_module("motion_reference_handler_module")  # hover(); not loaded by default
     try:
         fly(drone, args)
     finally:  # the API's spin threads keep the process alive if it isn't shut down
@@ -44,14 +43,13 @@ def fly(drone, args):
         step("arm", drone.arm())
     if not drone.info["offboard"]:  # stays on after a previous mission
         step("offboard", drone.offboard())
+    target = drone.position[2] + args.height
     step("takeoff", drone.takeoff(height=args.height, speed=0.5))
-    # Aerostack2's takeoff_plugin_position reports success when |height − z| < 0.2 m (absolute z),
-    # ~0.4 m early for a vehicle whose origin starts 0.215 m up. Our controller keeps the takeoff
-    # target, so let it get there before hover() freezes the reference.
-    time.sleep(3.0)
-    # Hover works, but the API logs "Timeout waiting for mode 1": the controller reports the
-    # plugin's hover mode (POSITION), not HOVER.
-    drone.motion_ref_handler.hover()
+    # takeoff_plugin_position reports success when |height − z| < 0.2 m with absolute z, ~0.4 m
+    # early for our base 0.215 m up. It leaves the takeoff target set, so wait until we're there.
+    deadline = time.time() + 15.0
+    while abs(drone.position[2] - target) > 0.05 and time.time() < deadline:
+        time.sleep(0.1)
     time.sleep(args.hover)
     if args.fault_motor:
         health = Actuators()

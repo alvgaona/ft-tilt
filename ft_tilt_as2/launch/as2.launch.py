@@ -1,7 +1,7 @@
 """ft_tilt sim + Aerostack2: platform, ground-truth state estimator, motion controller with the
 ft_tilt plugin, take-off and land behaviours. Drone namespace: ft_tilt.
 
-    pixi run as2 [gamma_deg:=107] [battery:=4s] [failure_gains:=mild] [headless:=false]
+    pixi run as2 [gamma_deg:=107] [battery:=4s] [failure_gains:=mild] [headless:=false] [yaw:=0.0]
     pixi run mission            # in a second terminal
 """
 import os
@@ -19,7 +19,7 @@ def generate_launch_description():
     share = get_package_share_directory("ft_tilt_as2")
     config = os.path.join(share, "config", "as2.yaml")
     sim_time = {"use_sim_time": True}
-    sim_args = ["gamma_deg", "battery", "failure_gains", "allocation", "headless"]
+    sim_args = ["gamma_deg", "battery", "failure_gains", "allocation", "headless", "yaw"]
     se = get_package_share_directory("as2_state_estimator")
     estimator_defaults = [  # every plugin parameter must be set; ours (last) override these
         os.path.join(se, "config", "state_estimator_default.yaml"),
@@ -38,6 +38,7 @@ def generate_launch_description():
         DeclareLaunchArgument("failure_gains", default_value="mild"),
         DeclareLaunchArgument("allocation", default_value="null_space"),
         DeclareLaunchArgument("headless", default_value="false"),
+        DeclareLaunchArgument("yaw", default_value="0.0"),
         IncludeLaunchDescription(
             os.path.join(get_package_share_directory("ft_tilt_bringup"), "launch", "sim.launch.py"),
             launch_arguments={a: LaunchConfiguration(a) for a in sim_args}.items()),

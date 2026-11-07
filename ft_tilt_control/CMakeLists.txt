@@ -34,7 +34,7 @@ if(BUILD_TESTING)
   # conda-forge's gtest headers shadow gtest_vendor's sources, so link the conda one.
   find_package(ament_cmake_gtest REQUIRED)
   find_package(GTest REQUIRED)
-  foreach(test test_model test_allocator test_attitude_pid)
+  foreach(test test_model test_allocator test_attitude_pid test_position_controller)
     add_executable(${test} test/${test}.cpp)
     target_link_libraries(${test} ${PROJECT_NAME} GTest::gtest_main)
     ament_add_gtest_test(${test})

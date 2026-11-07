@@ -70,7 +70,7 @@
         <material><ambient>0.03 0.03 0.03 1</ambient><diffuse>0.03 0.03 0.03 1</diffuse></material>
       </visual>
       <!-- E-Prop 10x4.5 mesh from PX4's 3DR Iris model (PX4-SITL_gazebo-classic, BSD), scaled
-           to the F550's 9.4" (239 mm) props. Motor 2 is red. -->
+           to the F550's 9.4" (239 mm) props. Red = cw (motors 1, 3, 5), black = ccw. -->
       <visual name="prop">
         <pose>0 0 0.012 0 0 0</pose>
         <geometry>
@@ -80,8 +80,8 @@
           </mesh>
         </geometry>
         <material>
-          <ambient>${'0.8 0.1 0.1 1' if i == 2 else '0.1 0.1 0.1 1'}</ambient>
-          <diffuse>${'0.8 0.1 0.1 1' if i == 2 else '0.1 0.1 0.1 1'}</diffuse>
+          <ambient>${'0.8 0.1 0.1 1' if spin > 0 else '0.1 0.1 0.1 1'}</ambient>
+          <diffuse>${'0.8 0.1 0.1 1' if spin > 0 else '0.1 0.1 0.1 1'}</diffuse>
         </material>
       </visual>
     </link>

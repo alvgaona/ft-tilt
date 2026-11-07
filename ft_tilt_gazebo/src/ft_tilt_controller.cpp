@@ -3,7 +3,8 @@
 //
 // Topics, all under /model/<model name>/:
 //   in   attitude_ref        gz.msgs.Vector3d   roll, pitch, yaw (rad)
-//   in   thrust_ref          gz.msgs.Double     Fz along body z (N); motors stay off until the first one
+//   in   thrust_ref          gz.msgs.Double     Fz along body z (N); motors stay off until the first one,
+//                                                  and a negative value switches them off (disarm)
 //   in   motor_health        gz.msgs.Actuators  normalized[i]: 1 healthy, 0 failed, else thrust cap h·F_M (RPIC17 §V)
 //   in   disturbance_torque  gz.msgs.Vector3d   body-frame torque applied to the base link (N·m)
 //   out  pwm                 gz.msgs.Actuators  normalized[i] = PWM (%), thrust ~ PWM² (thrust.hpp)
@@ -201,7 +202,7 @@ private:
   void OnThrustRef(const gz::msgs::Double & msg)
   {
     std::lock_guard<std::mutex> lock(mutex_);
-    thrust_ref_ = std::max(0.0, msg.data());
+    thrust_ref_ = msg.data() < 0.0 ? std::nullopt : std::optional<double>(msg.data());
   }
 
   void OnMotorHealth(const gz::msgs::Actuators & msg)

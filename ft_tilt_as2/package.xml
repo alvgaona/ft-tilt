@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>ft_tilt_as2</name>
+  <version>0.1.0</version>
+  <description>Aerostack2 platform and motion controller plugin for the ft_tilt vehicle</description>
+  <maintainer email="alvgaona@gmail.com">Alvaro Gaona</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>pluginlib</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>as2_core</depend>
+  <depend>as2_msgs</depend>
+  <depend>as2_motion_controller</depend>
+  <depend>ft_tilt_control</depend>
+  <exec_depend>ft_tilt_bringup</exec_depend>
+  <exec_depend>as2_state_estimator</exec_depend>
+  <exec_depend>as2_behaviors_motion</exec_depend>
+  <exec_depend>as2_python_api</exec_depend>
+  <exec_depend>actuator_msgs</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

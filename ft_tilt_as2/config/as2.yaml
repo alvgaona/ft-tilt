@@ -1,0 +1,24 @@
+# Aerostack2 nodes for the ft_tilt vehicle (namespace ft_tilt).
+/ft_tilt/platform:
+  ros__parameters:
+    cmd_freq: 100.0
+    info_freq: 10.0
+
+/ft_tilt/controller_manager:
+  ros__parameters:
+    plugin_name: ft_tilt_motion_controller
+    cmd_freq: 100.0
+    info_freq: 10.0
+    use_bypass: false  # the platform only takes ATTITUDE; our plugin makes it
+    tf_timeout_threshold: 0.05
+    ft_tilt_motion_controller:  # same values as experiment_runner
+      mass: 2.1
+      max_thrust: 30.0
+      position_kp: 0.2
+      position_ki: 0.02
+      position_kd: 0.6
+      altitude_kp: 3.0
+      altitude_ki: 0.5
+      altitude_kd: 3.0
+      max_tilt_deg: 10.0
+      max_speed: 1.0  # m/s, for POSITION references without a speed limit

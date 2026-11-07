@@ -1,0 +1,3 @@
+# Modes the ft_tilt platform accepts: the interface of its flight controller (gz plugin).
+available_modes:
+  - 0b00110000 # ATTITUDE with yaw ANGLE (roll, pitch, yaw, thrust)

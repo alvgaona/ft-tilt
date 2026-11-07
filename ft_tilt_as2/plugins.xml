@@ -1,0 +1,7 @@
+<class_libraries>
+  <library path="ft_tilt_motion_controller">
+    <class type="ft_tilt_motion_controller::Plugin" base_class_type="as2_motion_controller_plugin_base::ControllerBase">
+      <description>ft_tilt position loop: POSITION/SPEED in, ATTITUDE out.</description>
+    </class>
+  </library>
+</class_libraries>

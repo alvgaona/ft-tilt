@@ -10,6 +10,7 @@ find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(actuator_msgs REQUIRED)
+find_package(ft_tilt_control REQUIRED)
 
 add_executable(experiment_runner src/experiment_runner.cpp)
 target_link_libraries(experiment_runner
@@ -18,6 +19,7 @@ target_link_libraries(experiment_runner
   ${geometry_msgs_TARGETS}
   ${nav_msgs_TARGETS}
   ${actuator_msgs_TARGETS}
+  ft_tilt_control::ft_tilt_control
 )
 if(APPLE)
   # The message targets also link their Python bindings, which abort at load on macOS

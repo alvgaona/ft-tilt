@@ -27,6 +27,7 @@ def generate_launch_description() -> LaunchDescription:
     gamma = LaunchConfiguration("gamma_deg")
     gains = LaunchConfiguration("failure_gains")
     battery = LaunchConfiguration("battery")
+    allocation = LaunchConfiguration("allocation")
 
     runner = Node(
         package="ft_tilt_bringup",
@@ -43,11 +44,12 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument(
                 "config",
                 default_value="icris18_pulse",
-                description="icris18_pulse | icris18_yaw | rpic17_inflight_fault",
+                description="icris18_pulse | icris18_pulse_nofault | icris18_yaw | rpic17_inflight_fault",
             ),
             DeclareLaunchArgument("gamma_deg", default_value="107"),
             DeclareLaunchArgument("failure_gains", default_value="mild"),
             DeclareLaunchArgument("battery", default_value="3s"),
+            DeclareLaunchArgument("allocation", default_value="null_space"),
             DeclareLaunchArgument("headless", default_value="true"),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(os.path.join(bringup, "launch", "sim.launch.py")),
@@ -55,6 +57,7 @@ def generate_launch_description() -> LaunchDescription:
                     "gamma_deg": gamma,
                     "failure_gains": gains,
                     "battery": battery,
+                    "allocation": allocation,
                     "headless": LaunchConfiguration("headless"),
                 }.items(),
             ),
@@ -62,7 +65,7 @@ def generate_launch_description() -> LaunchDescription:
             ExecuteProcess(
                 cmd=[
                     "ros2", "bag", "record", "--use-sim-time", "-e", "/ft_tilt/.*",
-                    "-o", ["bags/", config, "_gamma", gamma, "_", gains, "_", battery],
+                    "-o", ["bags/", config, "_gamma", gamma, "_", gains, "_", battery, "_", allocation],
                 ],
                 output="screen",
             ),

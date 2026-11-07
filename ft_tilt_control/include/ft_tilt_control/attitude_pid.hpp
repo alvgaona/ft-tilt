@@ -24,6 +24,13 @@ inline PidGains mild_gains()
   return {{1.4, 1.4, 0.8}, {1.0, 1.0, 0.2}, {0.9, 0.9, 0.6}};
 }
 
+// RPIC17 §V roll/pitch gains, used with and without a fault ("the control law is unchanged").
+// RPIC17 gives no yaw gains; yaw uses the ICRIS18 set (assumed).
+inline PidGains rpic17_gains()
+{
+  return {{1.4, 1.4, 0.8}, {0.1, 0.1, 0.2}, {0.5, 0.5, 0.6}};
+}
+
 // One PID per Euler angle (ICRIS18 "loop-at-a-time"). The papers don't say how the
 // derivative is taken; here it acts on the measured body rate, so reference steps don't kick.
 class AttitudePid

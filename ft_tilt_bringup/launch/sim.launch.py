@@ -28,6 +28,8 @@ def generate_launch_description() -> LaunchDescription:
                 LaunchConfiguration("failure_gains"),
                 " battery:=",
                 LaunchConfiguration("battery"),
+                " allocation:=",
+                LaunchConfiguration("allocation"),
             ]
         ),
         value_type=str,
@@ -41,12 +43,17 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument(
                 "failure_gains",
                 default_value="mild",
-                description="Roll/pitch PID gains after a fault: mild | aggressive",
+                description="Roll/pitch PID gains after a fault: mild | aggressive | rpic17 (RPIC17 set, also before the fault)",
             ),
             DeclareLaunchArgument(
                 "battery",
                 default_value="3s",
                 description="3s: RPIC17 Table I | 4s: ICRIS18 total-failure vehicle (estimated)",
+            ),
+            DeclareLaunchArgument(
+                "allocation",
+                default_value="null_space",
+                description="After a fault: null_space (fault-aware) | pinv_clamp (pseudo-inverse + clamp)",
             ),
             DeclareLaunchArgument("headless", default_value="false"),
             ExecuteProcess(

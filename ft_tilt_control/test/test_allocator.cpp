@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "ft_tilt_control/allocator.hpp"
+#include "ft_tilt_control/thrust.hpp"
 
 namespace
 {
@@ -14,7 +15,9 @@ using ft_tilt::Vector6d;
 constexpr double kKf = 0.0776;               // N per % PWM
 constexpr double kMaxForce = 0.644 * 9.81;   // F_M
 constexpr double kLinearFloor = 14.0 * kKf;  // ICRIS18 14 % PWM floor, linear thrust model
-constexpr double kFloor = 0.14 * 0.14 * kMaxForce;  // the same floor with thrust ~ PWM²
+// ICRIS18 total-failure vehicle (battery:=4s, estimated) and its 14 % floor with thrust ~ PWM².
+constexpr double kKf4s = 0.083;
+constexpr double kMaxForce4s = 8.3;
 constexpr double kWeight = 2.1 * 9.81;
 
 Matrix46d a_of(double gamma_deg)
@@ -66,15 +69,17 @@ TEST(Allocator, LinearFloorLeavesNoHoverAfterFailure)
 
 TEST(Allocator, QuadraticFloorHoversAfterFailure)
 {
+  const double floor = ft_tilt::pwm_to_force(14.0, kKf4s, kMaxForce4s);
   auto b = Bounds().fail(1);
   for (int i : {0, 2, 3, 4, 5}) {
-    b.lower(i) = kFloor;
+    b.lower(i) = floor;
+    b.upper(i) = kMaxForce4s;
   }
   const Matrix46d a = a_of(107);
   const auto out = ft_tilt::allocate(a, kHover, b.lower, b.upper, true);
   EXPECT_GE(out.margin, -1e-9);
   EXPECT_EQ(out.force(1), 0.0);
-  EXPECT_GE(out.force(4), kFloor - 1e-9);
+  EXPECT_GE(out.force(4), floor - 1e-9);
   EXPECT_LT((a * out.force - kHover).norm(), 1e-9);
 }
 
@@ -124,4 +129,14 @@ TEST(Allocator, PartialFaultRespectsCap)
   EXPECT_GE(out.margin, -1e-9);
   EXPECT_LE(out.force(1), b.upper(1));
   EXPECT_LT((a * out.force - kHover).norm(), 1e-9);
+}
+
+TEST(Thrust, QuadraticPwmMatchesRpic17Hover)
+{
+  // Reaches F_M where the linear model does, and puts the standard vehicle's hover at the
+  // measured ≈ 60 % PWM (RPIC17 §V), where the linear model gives 44 %.
+  EXPECT_NEAR(ft_tilt::pwm_to_force(kMaxForce / kKf, kKf, kMaxForce), kMaxForce, 1e-12);
+  EXPECT_NEAR(ft_tilt::force_to_pwm(ft_tilt::pwm_to_force(37.0, kKf, kMaxForce), kKf, kMaxForce), 37.0, 1e-9);
+  EXPECT_NEAR(ft_tilt::force_to_pwm(kWeight / 6.0, kKf, kMaxForce), 60.0, 1.0);
+  EXPECT_NEAR(kWeight / 6.0 / kKf, 44.0, 1.0);
 }

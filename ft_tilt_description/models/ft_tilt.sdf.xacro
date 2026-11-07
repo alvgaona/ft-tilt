@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--
   Tilted-rotor hexacopter (RPIC17 / ICRIS18), primitives only.
-  Render with: xacro ft_tilt.sdf.xacro gamma_deg:=107 failure_gains:=mild
+  Render with: xacro ft_tilt.sdf.xacro gamma_deg:=107 failure_gains:=mild allocation:=null_space
 
   Frame: FLU, origin at the centre of mass. Motor i (1..6) sits on the arm at (i-1)·60° from +x
   toward +y. Its spin axis is cos(γ)·d̂ + sin(γ)·ẑ, so γ = 107° leans it 17° toward the centre
@@ -12,6 +12,7 @@
   <xacro:arg name="gamma_deg" default="107"/>
   <xacro:arg name="failure_gains" default="mild"/>
   <xacro:arg name="battery" default="3s"/>
+  <xacro:arg name="allocation" default="null_space"/>  <!-- null_space | pinv_clamp -->
 
   <!-- RPIC17 Table I and ICRIS18 §IV -->
   <xacro:property name="tilt" value="${radians($(arg gamma_deg))}"/>
@@ -266,7 +267,10 @@
       <motor_constant>${motor_constant}</motor_constant>
       <pwm_floor>14</pwm_floor>
       <rate>200</rate>
+      <xacro:unless value="${'$(arg failure_gains)' in ['mild', 'aggressive', 'rpic17']}">${xacro.fatal('failure_gains must be mild, aggressive or rpic17')}</xacro:unless>
       <failure_gains>$(arg failure_gains)</failure_gains>
+      <xacro:unless value="${'$(arg allocation)' in ['null_space', 'pinv_clamp']}">${xacro.fatal('allocation must be null_space or pinv_clamp')}</xacro:unless>
+      <allocation>$(arg allocation)</allocation>
     </plugin>
 
     <!-- Ground-truth odometry for the experiment runner's altitude hold. -->

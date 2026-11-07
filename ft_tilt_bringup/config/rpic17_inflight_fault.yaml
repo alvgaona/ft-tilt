@@ -1,9 +1,12 @@
-# RPIC17 §V, Fig. 7-8: partial fault (motor 2 limited to 40 % of its maximum thrust) switched on in hover,
-# then off. Run with gamma_deg:=107 (recovers) and gamma_deg:=90 (loses control).
+# RPIC17 §V, Fig. 7-8: partial fault on motor 2 switched on in hover, then off. The text says
+# "limited to 40% of its maximum thrust", but Fig. 6/8 and the text show a 40 % PWM cap; with
+# thrust ~ PWM² (thrust.hpp) that is (40/81.4)² = 0.24·F_M on battery:=3s (derived). With RPIC17's gains:
+#   gamma_deg:=107 failure_gains:=rpic17                          tilted, fault-aware: recovers
+#   gamma_deg:=90  failure_gains:=rpic17 allocation:=pinv_clamp   standard, pinv + clamp: rolls over
 experiment_runner:
   ros__parameters:
     duration: 40.0
     fault_time: 15.0
     fault_clear_time: 30.0
     fault_motor: 2
-    fault_health: 0.4
+    fault_health: 0.241

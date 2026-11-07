@@ -11,3 +11,7 @@ experiment_runner:
     disturbance_start: 20.0
     disturbance_end: 30.0
     disturbance_torque: [0.0, -1.0, 0.0]
+    # Fig. 6-7 come from an attitude-only simulation: no position hold, attitude reference 0.
+    position_kp: 0.0
+    position_ki: 0.0
+    position_kd: 0.0

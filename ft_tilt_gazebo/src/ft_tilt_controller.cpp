@@ -6,7 +6,7 @@
 //   in   thrust_ref          gz.msgs.Double     Fz along body z (N); motors stay off until the first one
 //   in   motor_health        gz.msgs.Actuators  normalized[i]: 1 healthy, 0 failed, else thrust cap h·F_M (RPIC17 §V)
 //   in   disturbance_torque  gz.msgs.Vector3d   body-frame torque applied to the base link (N·m)
-//   out  pwm                 gz.msgs.Actuators  normalized[i] = PWM (%)
+//   out  pwm                 gz.msgs.Actuators  normalized[i] = PWM (%), thrust ~ PWM² (thrust.hpp)
 //   out  attitude            gz.msgs.Vector3d   measured roll, pitch, yaw (rad), ground truth
 //   out  torque_cmd          gz.msgs.Vector3d   PID output Mx, My, Mz (N·m)
 //   out  allocation_margin   gz.msgs.Double     smallest distance to 0 / F_M (N), < 0 means clamped
@@ -37,6 +37,7 @@
 #include "ft_tilt_control/allocator.hpp"
 #include "ft_tilt_control/attitude_pid.hpp"
 #include "ft_tilt_control/model.hpp"
+#include "ft_tilt_control/thrust.hpp"
 
 namespace ft_tilt
 {
@@ -93,14 +94,21 @@ public:
     a_ = effectiveness(rotors, cfg->Get<double>("kt_ratio"));
     kf_ = cfg->Get<double>("kf");
     max_force_ = cfg->Get<double>("max_force");
-    // Thrust grows ~ with PWM², so 14 % PWM is ~2 % of F_M, not k_f·14 %. The linear value
-    // (1.1 N) leaves no hover with motor 2 dead; ICRIS18 Fig. 11 shows motor 5 flying there.
-    floor_ = max_force_ * std::pow(cfg->Get<double>("pwm_floor", 14.0).first / 100.0, 2);
+    // Thrust grows ~ with PWM² (thrust.hpp), so 14 % PWM is a few % of F_M, not k_f·14 %. The
+    // linear value (1.1 N) leaves no hover with motor 2 dead; ICRIS18 Fig. 11 shows motor 5 there.
+    floor_ = pwm_to_force(cfg->Get<double>("pwm_floor", 14.0).first, kf_, max_force_);
     motor_constant_ = cfg->Get<double>("motor_constant");
     period_ = 1.0 / cfg->Get<double>("rate", 200.0).first;
     const auto gains = cfg->Get<std::string>("failure_gains", "mild").first;
-    failure_gains_ = gains == "aggressive" ? aggressive_gains() : mild_gains();
-    gzmsg << "FtTiltController: A =\n" << a_ << "\nfailure gains: " << gains << "\n";
+    failure_gains_ = gains == "aggressive" ? aggressive_gains() :
+      gains == "rpic17" ? rpic17_gains() : mild_gains();
+    nominal_gains_ = gains == "rpic17" ? rpic17_gains() : aggressive_gains();
+    // null_space: fault-aware (tilted vehicle). pinv_clamp: pseudo-inverse + clamp, unaware of a
+    // partial fault (assumed for RPIC17's standard vehicle; the paper doesn't say).
+    const auto allocation = cfg->Get<std::string>("allocation", "null_space").first;
+    null_space_on_fault_ = allocation != "pinv_clamp";
+    gzmsg << "FtTiltController: A =\n" << a_ << "\nfailure gains: " << gains
+          << ", allocation: " << allocation << "\n";
 
     const std::string ns = "/model/" + model_.Name(ecm) + "/";
     node_.Subscribe(ns + "attitude_ref", &FtTiltController::OnAttitudeRef, this);
@@ -160,7 +168,7 @@ public:
     double margin = 0.0;
     if (thrust) {
       const bool fault = (health.array() < 1.0).any();
-      pid_.set_gains(fault ? failure_gains_ : aggressive_gains());
+      pid_.set_gains(fault ? failure_gains_ : nominal_gains_);
       torque = pid_.update(rpy_ref, rpy, rates, dt);
 
       Vector6d lower, upper;
@@ -169,7 +177,7 @@ public:
         lower(i) = upper(i) > 0.0 ? floor_ : 0.0;  // never stop a working motor (ICRIS18 §V)
       }
       const Eigen::Vector4d wrench(torque.x(), torque.y(), torque.z(), *thrust);
-      const auto alloc = allocate(a_, wrench, lower, upper, fault);
+      const auto alloc = allocate(a_, wrench, lower, upper, fault && null_space_on_fault_);
       margin = alloc.margin;
       force = alloc.force;
     } else {
@@ -236,7 +244,7 @@ private:
     gz::msgs::Actuators pwm;
     *pwm.mutable_header()->mutable_stamp() = stamp;
     for (int i = 0; i < kNumRotors; ++i) {
-      pwm.add_normalized(force(i) / kf_);
+      pwm.add_normalized(force_to_pwm(force(i), kf_, max_force_));
     }
     pwm_pub_.Publish(pwm);
 
@@ -259,6 +267,8 @@ private:
   Matrix46d a_;
   double kf_ = 0, max_force_ = 0, floor_ = 0, motor_constant_ = 1, period_ = 0.005;
   PidGains failure_gains_ = mild_gains();
+  PidGains nominal_gains_ = aggressive_gains();
+  bool null_space_on_fault_ = true;
   AttitudePid pid_;
   std::optional<double> last_update_;
   gz::msgs::Actuators rotor_cmd_;

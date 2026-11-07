@@ -9,3 +9,6 @@ bags/
 
 # raw F550 download (trimmed meshes live in ft_tilt_description/meshes)
 dji-flame-wheel-f550-model_files/
+
+# commitlint (pixi run -e lint)
+node_modules/

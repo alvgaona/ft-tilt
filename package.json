@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "description": "Commit-message linting only (pixi run -e lint commitlint); the project itself is C++/ROS.",
+  "devDependencies": {
+    "@commitlint/cli": "21.2.4",
+    "@commitlint/config-conventional": "21.2.4"
+  }
+}

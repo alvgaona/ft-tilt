@@ -48,3 +48,16 @@ experiment = { cmd = "bash -c 'source install/setup.bash && ros2 launch ft_tilt_
 as2 = { cmd = "bash -c 'source install/setup.bash && ros2 launch ft_tilt_as2 as2.launch.py \"$@\"' --", depends-on = ["build"] }
 mission = "bash -c 'source install/setup.bash && ros2 run ft_tilt_as2 mission.py \"$@\"' --"
 test-missions = { cmd = "bash -c 'source install/setup.bash && python3 ft_tilt_as2/scripts/test_missions.py \"$@\"' --", depends-on = ["build"] }
+
+# Commit-message linting (lefthook + commitlint), kept out of the ROS environment.
+[feature.lint.dependencies]
+nodejs = "*"
+lefthook = "*"
+
+[feature.lint.tasks]
+lint-install = { cmd = "npm ci --no-audit --no-fund", inputs = ["package-lock.json"], outputs = ["node_modules/.package-lock.json"] }
+commitlint = { cmd = "npx --no-install commitlint", depends-on = ["lint-install"] }
+hooks = { cmd = "lefthook install", depends-on = ["lint-install"] }
+
+[environments]
+lint = { features = ["lint"], no-default-feature = true }

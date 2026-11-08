@@ -1,0 +1,2 @@
+minimumReleaseAgeExclude:
+  - '@posuta/posuta@0.1.0'

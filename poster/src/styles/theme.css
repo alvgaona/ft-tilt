@@ -1,0 +1,169 @@
+/* This poster's look: yours to change. Tokens first, so a lab theme package (plain :root tokens,
+   unlayered) overrides them whatever the load order. Everything here is in @layer posuta.theme,
+   after posuta.base and Tailwind's reset; your own unlayered CSS and Tailwind utilities beat it.
+   Palette and type follow aerostack2.dev, as in the first two posters. */
+@layer posuta.base, posuta.theme;
+@import "@fontsource/ibm-plex-sans/400.css" layer(posuta.theme);
+@import "@fontsource/ibm-plex-sans/400-italic.css" layer(posuta.theme);
+@import "@fontsource/ibm-plex-sans/500.css" layer(posuta.theme);
+@import "@fontsource/ibm-plex-sans/600.css" layer(posuta.theme);
+@import "@fontsource/ibm-plex-serif/500.css" layer(posuta.theme);
+@import "@fontsource/ibm-plex-serif/600.css" layer(posuta.theme);
+@import "@fontsource/ibm-plex-mono/400.css" layer(posuta.theme);
+@import "@fontsource/ibm-plex-mono/500.css" layer(posuta.theme);
+
+@layer posuta.theme {
+:root {
+  --bg: #ffffff; --surface: #f9f8f9; --fg: #282a30; --fg-2: #3c4149; --muted: #6f6e77;
+  --border: #e9e8ea; --accent: #1348dc; --accent-tint: color-mix(in oklab, var(--accent) 8%, transparent);
+  --c-std: #8b8f99; --c-tilt: #1348dc; --c-aggr: #0f8f7a; --c-fault: #d97706;
+  --fault-tint: color-mix(in oklab, var(--c-fault) 14%, transparent);
+  --font-display: "IBM Plex Serif", ui-serif, Georgia, serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --radius: .4rem;
+  --posuta-gap: 1.87rem;
+}
+/* Screen sizes only: in print, base.css sizes the page and the type from the paper. */
+@media screen {
+  :root { font-size: 15px; }
+  .posuta-canvas { max-width: 112rem; margin: 0 auto; }
+}
+@media screen and (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181d; --surface: #1a1d23; --fg: #edeef3; --fg-2: #d0d4dc; --muted: #9aa0ac;
+    --border: #2d3139; --accent: #6b96ff; --accent-tint: color-mix(in oklab, var(--accent) 12%, transparent);
+    --c-std: #7b818d; --c-tilt: #5b86f0; --c-aggr: #2fa88f; --c-fault: #c97f2e;
+    --fault-tint: color-mix(in oklab, var(--c-fault) 20%, transparent);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181d; --surface: #1a1d23; --fg: #edeef3; --fg-2: #d0d4dc; --muted: #9aa0ac;
+  --border: #2d3139; --accent: #6b96ff; --accent-tint: color-mix(in oklab, var(--accent) 12%, transparent);
+  --c-std: #7b818d; --c-tilt: #5b86f0; --c-aggr: #2fa88f; --c-fault: #c97f2e;
+  --fault-tint: color-mix(in oklab, var(--c-fault) 20%, transparent);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 1rem; line-height: 1.55;
+  padding: 0 max(16px, env(safe-area-inset-right, 0px)) 3.2rem max(16px, env(safe-area-inset-left, 0px));
+}
+.hero { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 1.6rem 3.7rem; align-items: end;
+        padding-block: 2.7rem 1.9rem; border-bottom: 1px solid var(--border); margin-bottom: 1.9rem; position: relative; }
+.hero::before { content: ""; position: absolute; inset: 0; z-index: -1;
+  background-image: linear-gradient(to right, var(--border) 1px, transparent 1px), linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+  background-size: 3.2rem 3.2rem; background-position: center;
+  mask-image: radial-gradient(ellipse at 30% 40%, black 20%, transparent 70%); }
+.eyebrow { font-family: var(--font-mono); font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--font-display); font-weight: 600; font-size: clamp(1.75rem, 2.9vw, 2.8rem); line-height: 1.14; margin: .67rem 0 .8rem; text-wrap: balance; max-width: 30ch; }
+h1 em { font-style: normal; color: var(--accent); }
+.lede { font-size: clamp(1.07rem, 1.35vw, 1.27rem); color: var(--fg-2); max-width: 70ch; margin: 0; }
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.6rem 2.1rem; }
+.stat { display: grid; gap: .4rem; align-content: start; }
+.stat b { font-family: var(--font-display); font-weight: 600; font-size: clamp(1.75rem, 2.6vw, 2.5rem); line-height: 1; font-variant-numeric: tabular-nums; }
+.stat b.acc { color: var(--accent); }
+.stat span { font-size: .87rem; color: var(--muted); max-width: 30ch; }
+
+.posuta-section { min-width: 0; margin-bottom: 1.9rem; }
+.posuta-section.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: .93rem; }
+h2 { font-family: var(--font-display); font-weight: 600; font-size: 1.47rem; line-height: 1.25; margin: 0 0 .27rem; text-wrap: balance; }
+h2 .n { font-family: var(--font-mono); font-size: .87rem; font-weight: 500; color: var(--accent); margin-right: .53rem; vertical-align: .13rem; }
+h3 { font-size: .93rem; font-weight: 600; margin: 1.07rem 0 .4rem; }
+p { margin: .53rem 0; max-width: 68ch; }
+.sub { color: var(--muted); font-size: .9rem; margin: 0 0 .8rem; }
+code { font-family: var(--font-mono); font-size: .92em; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+footer { margin-top: 1.9rem; color: var(--muted); font-size: .8rem; font-family: var(--font-mono); display: flex; justify-content: space-between; align-items: end; gap: 1rem; }
+
+.posuta-figure { margin: 1rem 0; }
+.posuta-figure figure { margin: 0; }
+/* Plot ships its own unlayered <style>; !important in this layer is what beats it. */
+.posuta-figure [class*="plot-"] { --plot-background: var(--bg) !important; }
+.posuta-figure [class*="-swatches"] { font-size: .8rem !important; }
+.posuta-figure figcaption, .posuta-caption { font-size: .87rem; color: var(--muted); margin-top: .4rem; max-width: 68ch; }
+.posuta-tip { background: var(--bg); color: var(--fg); border: 1px solid var(--border); border-radius: var(--radius);
+              box-shadow: 0 2px 8px rgb(0 0 0 / .12); padding: .4rem .6rem; font-size: .8rem; line-height: 1.5; }
+.posuta-tip b { font-weight: 600; color: var(--muted); }
+.posuta-slider:not([hidden]) { display: flex; align-items: center; gap: .8rem; font-size: .87rem; color: var(--muted); }
+.posuta-slider input { flex: 1; max-width: 20rem; accent-color: var(--accent); }
+.posuta-slider output { font-family: var(--font-mono); min-width: 3ch; }
+
+.posuta-eq { gap: 1rem; }
+.posuta-eq-n { color: var(--muted); font-family: var(--font-mono); font-size: .87rem; }
+.posuta-refs { font-size: .87rem; color: var(--fg-2); padding-left: 1.6rem; margin: .4rem 0; }
+.posuta-refs p { margin: .27rem 0; }
+
+@media screen and (max-width: 1000px) { .hero { grid-template-columns: 1fr; } }
+/* ft-tilt: the original poster's blocks. */
+.top { margin-bottom: 1.9rem; }
+.cols .posuta-section { border-top: 1px solid var(--border); padding-top: .93rem; }
+.note { color: var(--muted); font-size: .83rem; margin-top: .53rem; }
+.posuta-section ul { margin: .53rem 0; padding-left: 1.2rem; display: grid; gap: .4rem; }
+.posuta-section li { max-width: 66ch; }
+.posuta-section li p { margin: 0; }
+.split { display: grid; grid-template-columns: repeat(var(--n, 2), minmax(0, 1fr)); gap: 0 1.87rem; }
+.split > * { min-width: 0; }
+.split > * + * { border-left: 1px solid var(--border); padding-left: 1.87rem; }
+.prop { font-size: .93rem; }
+.prop > b { display: block; margin-bottom: .27rem; font-size: 1rem; }
+.katex { font-size: 1.08em; white-space: nowrap; }
+dl.eq { display: grid; grid-template-columns: 8.5em 1fr; gap: .4rem .93rem; align-items: baseline; margin: .67rem 0; }
+dl.eq dt { font-size: .87rem; color: var(--muted); }
+dl.eq dd { margin: 0; overflow-x: auto; overflow-y: hidden; padding-block: .27rem; min-width: 0; }
+dl.eq .katex { font-size: 1.12em; }
+table { border-collapse: collapse; width: 100%; font-size: .87rem; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: .33rem .53rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { font-weight: 500; color: var(--muted); font-size: .8rem; }
+td.best { color: var(--accent); font-weight: 600; }
+td.bad { color: var(--c-fault); font-weight: 600; }
+.tbl { overflow-x: auto; }
+a[href^="#ref-"] { font-family: var(--font-mono); font-size: .82em; }
+
+/* Diagrams: the SVGs in figures/ style themselves from these tokens. */
+.bd { margin: .8rem 0 .4rem; overflow-x: auto; }
+.bd .posuta-media { min-width: 48rem; font-family: var(--font-body); }
+.bd.control .posuta-media { min-width: 54rem; max-width: 78rem; margin: 0 auto; }
+.bd .posuta-caption { font-size: .83rem; margin: .13rem 0 .67rem; }
+.key { display: inline-block; width: .8rem; height: .6rem; border: 1.2px solid var(--muted); background: var(--bg); border-radius: 2px; vertical-align: -.03rem; margin-right: .27rem; }
+.key.new { border-color: var(--accent); background: var(--accent-tint); }
+.key.f { border: 0; border-top: 2px dashed var(--c-fault); height: 0; width: 1.07rem; vertical-align: .2rem; border-radius: 0; background: none; }
+
+/* Section 1: the top views, then [play][slider], then the tilt trace. Player moves its button
+   into the top-view figure. */
+.fault-top { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .53rem .67rem; align-items: center; margin: 0; }
+.fault-top .posuta-plot { grid-row: 1; grid-column: 1 / -1; }
+.fault-top .play { grid-row: 2; grid-column: 1; font: inherit; font-size: .87rem; border: 1px solid var(--border); background: var(--bg);
+                   color: var(--fg); border-radius: var(--radius); padding: .27rem .67rem; cursor: pointer; min-width: 4.3rem; }
+.fault-top .play[hidden] { display: none; }
+.fault-top .posuta-slider { grid-row: 2; grid-column: 2; }
+.fault-top .posuta-slider input { max-width: none; }
+.fault-ts { margin: .93rem 0 0; }
+.fault-ts .posuta-slider { display: none !important; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.posuta-refs { list-style: none; padding: 0; counter-reset: ref; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .67rem 1.87rem; font-size: .83rem; }
+.posuta-refs li { counter-increment: ref; min-width: 0; overflow-wrap: anywhere; }
+.posuta-refs li::before { content: "[" counter(ref) "] "; font-weight: 600; }
+.refs { border-top: 1px solid var(--border); padding-top: .93rem; margin-top: .27rem; }
+
+@media screen and (max-width: 1000px) {
+  .split, .posuta-refs { grid-template-columns: 1fr; gap: .93rem; }
+  .split > * + * { border-left: 0; padding-left: 0; }
+}
+
+
+@media print {
+  body { padding: 0; }
+  .posuta-canvas { padding: 0 1.07rem 1.07rem; display: flex; flex-direction: column; }
+  main { flex: 1 0 auto; }
+  a { color: inherit; }
+  .qr { display: flex; align-items: center; gap: 1rem; color: var(--fg-2); }
+  .qr .posuta-qr { width: 6rem; height: 6rem; }
+}
+}

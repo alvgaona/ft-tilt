@@ -1,0 +1,46 @@
+---
+// A play/pause button for a <Chart> slider: <Player chart=".fault-top" sync=".fault-ts" />.
+// It moves the slider at `speed` slider units per second (1 = real time for a slider in seconds)
+// and copies its value to the sliders of the `sync` charts, so several charts follow one time.
+// Starts playing unless the reader prefers reduced motion. The script moves the button into the
+// chart's <figure>, next to its slider, and shows it; without JS, or in print, there is none.
+interface Props { chart: string; sync?: string; speed?: number }
+const { chart, sync = "", speed = 1 } = Astro.props;
+---
+<button class="play" type="button" hidden data-print="hide" data-chart={chart} data-sync={sync} data-speed={speed}>Pause</button>
+<script>
+  for (const btn of document.querySelectorAll<HTMLButtonElement>("button.play[data-chart]")) {
+    const input = document.querySelector<HTMLInputElement>(`${btn.dataset.chart} .posuta-slider input`);
+    if (!input) throw new Error(`Player: no slider in ${btn.dataset.chart}`);
+    const others = btn.dataset.sync ? [...document.querySelectorAll<HTMLInputElement>(`${btn.dataset.sync} .posuta-slider input`)] : [];
+    input.closest("figure")!.append(btn);
+    btn.hidden = false;
+    const [min, max, speed] = [+input.min, +input.max, +btn.dataset.speed!];
+    const set = (v: number) => {
+      input.value = String(v);
+      input.dispatchEvent(new Event("input"));
+    };
+    input.addEventListener("input", () => others.forEach((o) => { o.value = input.value; o.dispatchEvent(new Event("input")); }));
+    let playing = false, last: number | null = null, value = +input.value;
+    const step = (now: number) => {
+      if (!playing) return;
+      if (last != null) value += ((now - last) / 1000) * speed;
+      last = now;
+      if (value > max) value = min;
+      set(value);
+      requestAnimationFrame(step);
+    };
+    const play = (on: boolean) => {
+      playing = on; last = null; value = +input.value;
+      btn.textContent = on ? "Pause" : "Play";
+      if (on) requestAnimationFrame(step);
+    };
+    btn.addEventListener("click", () => play(!playing));
+    input.addEventListener("pointerdown", () => play(false));
+    input.addEventListener("keydown", () => play(false));
+    // Autoplay runs from the start; the slider's own value is the frame that prints.
+    // Not when printing (posuta pdf loads the page as print): the PDF keeps the declared frame.
+    if (!matchMedia("print, (prefers-reduced-motion: reduce)").matches) { set(min); play(true); }
+    else play(false);
+  }
+</script>

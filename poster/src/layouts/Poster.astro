@@ -1,0 +1,43 @@
+---
+// This poster's layout: the header, the footer and the QR code. It is yours to change: posuta
+// only provides <Canvas> (print size, link previews); the look is ../styles/theme.css.
+// Pages use it from frontmatter: `layout: ../layouts/Poster.astro`, or wrap the page in
+// <Poster frontmatter={frontmatter}> to give the lede citations and links: <p slot="lede">…</p>.
+import Canvas from "@posuta/posuta/Canvas.astro";
+import QR from "@posuta/posuta/QR.astro";
+import "../styles/theme.css";
+
+interface Stat { value: string; label: string; accent?: boolean }
+interface Frontmatter {
+  title: string; highlight?: string; eyebrow?: string; lede?: string; description?: string; stats?: Stat[]; footer?: string;
+  print?: string | { size?: string; orientation?: "portrait" | "landscape"; width?: string; height?: string };
+  /** The QR code on the printed poster: a URL, or false. Defaults to this page's URL when `site` is set. */
+  qr?: string | false;
+  /** "light" or "dark" to fix the colour scheme, or tokens such as { accent: "#0a7" }. */
+  theme?: "light" | "dark" | Record<string, string>;
+}
+const { frontmatter } = Astro.props as { frontmatter: Frontmatter };
+const { title, highlight, eyebrow, lede, description = lede, stats = [], footer, print, theme } = frontmatter;
+const qrUrl = frontmatter.qr === false ? undefined : frontmatter.qr ?? (Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined);
+---
+<Canvas title={`${title}${highlight ? ` ${highlight}` : ""}`} description={description} print={print} theme={theme}>
+  <header class="hero" data-name="the title block">
+    <div>
+      {eyebrow && <div class="eyebrow">{eyebrow}</div>}
+      <h1>{title}{highlight && <> <em>{highlight}</em></>}</h1>
+      {Astro.slots.has("lede") ? <slot name="lede" /> : lede && <p class="lede">{lede}</p>}
+    </div>
+    {stats.length > 0 && (
+      <div class="stats">
+        {stats.map((s) => <div class="stat"><b class:list={{ acc: s.accent }}>{s.value}</b><span>{s.label}</span></div>)}
+      </div>
+    )}
+  </header>
+  <main><slot /></main>
+  {(footer || qrUrl) && (
+    <footer data-name="the footer">
+      <span>{footer}</span>
+      {qrUrl && <a class="qr" data-print="only" href={qrUrl}><QR url={qrUrl} /><span>{qrUrl.replace(/^https?:\/\//, "")}</span></a>}
+    </footer>
+  )}
+</Canvas>

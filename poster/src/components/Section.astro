@@ -1,0 +1,10 @@
+---
+// A numbered poster section: <Section n={1} title="The problem" sub="One-line context">…</Section>
+interface Props { n?: number | string; title: string; sub?: string; panel?: boolean }
+const { n, title, sub, panel = false } = Astro.props;
+---
+<section class:list={["posuta-section", { panel }]} data-name={title}>
+  <h2>{n != null && <span class="n">{n}</span>}{title}</h2>
+  {sub && <p class="sub">{sub}</p>}
+  <slot />
+</section>

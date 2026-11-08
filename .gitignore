@@ -1,18 +1,24 @@
+*.pdf
+*.md
+!README.md
+
+# macOS
 .DS_Store
 
+# Build
 .pixi/
 build/
 install/
 log/
 bags/
+__pycache__/
 
+# CAD models
 dji-flame-wheel-f550-model_files/
 
+# Node
 node_modules/
 
-# Kept local: the papers are under publishers' copyright
-/AGENTS.md
-/*.pdf
-
+# Other
 ft_tilt_description/tools/
 ft_tilt_bringup/tools/

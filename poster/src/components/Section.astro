@@ -1,10 +1,12 @@
 ---
 // A numbered poster section: <Section n={1} title="The problem" sub="One-line context">…</Section>
-interface Props { n?: number | string; title: string; sub?: string; panel?: boolean }
-const { n, title, sub, panel = false } = Astro.props;
+// refs: frontmatter.references, needed when `sub` cites [@key].
+interface Props { n?: number | string; title: string; sub?: string; panel?: boolean; refs?: { key: string; n: number }[] }
+import { md } from "@posuta/posuta/md";
+const { n, title, sub, panel = false, refs } = Astro.props;
 ---
 <section class:list={["posuta-section", { panel }]} data-name={title}>
   <h2>{n != null && <span class="n">{n}</span>}{title}</h2>
-  {sub && <p class="sub">{sub}</p>}
+  {sub && <p class="sub" set:html={await md(sub, refs)} />}
   <slot />
 </section>

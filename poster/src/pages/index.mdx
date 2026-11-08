@@ -29,7 +29,7 @@ import control from "../../figures/control.svg";
 <Grid cols={3} class="top">
 <Cell>
 
-<Section n={1} title="The problem, in one fault" sub="Top view, hover, RPIC17's in-flight fault: motor 2 is capped at 40 % PWM at t = 0. Ring = PWM per motor. The drawing foreshortens with roll and pitch. Recorded Gazebo runs, 3s battery, RPIC17 gains.">
+<Section n={1} title="The problem, in one fault" refs={frontmatter.references} sub="Top view, hover, the in-flight fault of RPIC17 [@rpic17]: motor 2 is capped at 40 % PWM at $t = 0$. Ring = PWM per motor. The drawing foreshortens with roll and pitch. Recorded Gazebo runs, 3s battery, RPIC17 gains.">
 
 <Chart
   data="fault.csv"
@@ -57,7 +57,7 @@ import control from "../../figures/control.svg";
 
 <Section n={2} title="The architecture" panel>
 
-<p class="sub">Two computers, as on the real vehicle: Aerostack2 plans and holds position, the flight controller holds attitude and allocates thrust. Topics cross the ROS ↔ Gazebo bridge. Aerostack2 [@as2] is used as released, unmodified.</p>
+<p class="sub">Two computers, as on the real vehicle: Aerostack2 plans and holds position, the flight controller holds attitude and allocates thrust. Topics cross the ROS ↔ Gazebo bridge. Aerostack2 is used as released, unmodified.</p>
 
 <Figure.Root class="bd">
   <Figure.Media src={architecture} alt="Architecture: mission, behaviours, motion controller and platform in Aerostack2; the platform sends attitude and thrust through the bridge to the flight controller plugin in Gazebo, which drives six motor models; odometry returns through the bridge to the platform and the state estimator. The fault command goes from the mission straight to the flight controller." />
@@ -107,16 +107,16 @@ import control from "../../figures/control.svg";
   <dt>Thrust</dt>
   <dd>$T = \dfrac{m\,(g + a_z)}{\cos\phi\,\cos\theta}$</dd>
 </dl>
-<p class="note">Tilt ≤ 10°, position error capped at 2 m. The integral (≤ 0.5 m/s²) cancels the ≈ 0.2 m/s² sideways push that tilted rotors make once their forces are unequal; A has no rows for it.</p>
+<p class="note">Tilt ≤ 10°, position error capped at 2 m. The integral (≤ 0.5 m/s²) cancels the ≈ 0.2 m/s² sideways push that tilted rotors make once their forces are unequal; $A$ has no rows for it.</p>
 </div>
 <div class="prop">
-<b>Attitude PID</b> <span class="note">(§IV [@icris18])</span>
+<b>Attitude PID</b> <span class="note">(ICRIS18 [@icris18] §IV)</span>
 <dl class="eq">
   <dt>Torque</dt>
   <dd>$M = K_p e_\eta + \int K_i e_\eta\,dt - K_d\,\omega_b$</dd>
 </dl>
 <div class="tbl"><table>
-  <thead><tr><th>Gain set</th><th>Kp</th><th>Ki</th><th>Kd</th><th>Used</th></tr></thead>
+  <thead><tr><th>Gain set</th><th>$K_p$</th><th>$K_i$</th><th>$K_d$</th><th>Used</th></tr></thead>
   <tbody>
     <tr><td>Aggressive</td><td>5</td><td>6</td><td>0.9</td><td>roll/pitch, no fault</td></tr>
     <tr><td>Mild</td><td>1.4</td><td>1</td><td>0.9</td><td>roll/pitch, after a fault</td></tr>
@@ -126,14 +126,14 @@ import control from "../../figures/control.svg";
 <p class="note">D on the measured body rate, so reference steps don't kick. The integral stores $\int K_i e$, so switching sets is bumpless.</p>
 </div>
 <div class="prop">
-<b>Fault-aware allocation</b> <span class="note">(eq. (6) [@rpic17])</span>
+<b>Fault-aware allocation</b> <span class="note">(RPIC17 [@rpic17] eq. (6))</span>
 <dl class="eq">
   <dt>No fault</dt>
   <dd>$f = \operatorname{clamp}\big(A^\dagger [M; F_z],\ f_{\min},\ F_M\big)$</dd>
-  <dt>Motor i off</dt>
+  <dt>Motor $i$ off</dt>
   <dd>$f = \tilde A_i^\dagger [M; F_z] + \beta\,w,\quad \tilde A_i w = 0,\ w_i = 0$</dd>
 </dl>
-<p>β is one scalar. Keep β = 0 if every motor fits in $[f_{\min}, F_M]$, else the smallest β that fits; if none does, the least violating one, then clamp.</p>
+<p>$\beta$ is one scalar. Keep $\beta = 0$ if every motor fits in $[f_{\min}, F_M]$, else the smallest $\beta$ that fits; if none does, the least violating one, then clamp.</p>
 <p class="note">$f_{\min}$ is the 14 % PWM running floor (ICRIS18 §V): a stopped brushless motor restarts badly. A partial fault $h$ caps the motor at $h F_M$.</p>
 </div>
 </div>
@@ -150,7 +150,7 @@ import control from "../../figures/control.svg";
 <dl class="eq">
   <dt>Spin axis</dt>
   <dd>$e_i = \cos\gamma\,\hat d_i + \sin\gamma\,\hat z$</dd>
-  <dt>Column of A</dt>
+  <dt>Column of $A$</dt>
   <dd>$A_{:,i} = \begin{bmatrix} r_i \times e_i + \sigma_i \tilde k_t e_i \\ \hat z \cdot e_i \end{bmatrix}$</dd>
   <dt>Wrench</dt>
   <dd>$[M_x, M_y, M_z, F_z]^\top = A f,\quad 0 \le f_i \le F_M$</dd>
@@ -167,22 +167,22 @@ With motor 2 off, the thrust column of $\tilde A_2^\dagger$ is
 
 with $D = 3\alpha^2 + 1$. Every healthy motor gets a positive share [@taes16] exactly when $\alpha \notin \{0, \pm 1\}$, so more thrust can always lift all of them above 0 and any torque is reachable. Flat ($\alpha = 0$): motor 5 gets no share, and one yaw direction would need $f_5 < 0$.
 
-<p class="note">The code builds A from the model's geometry and uses the printed closed forms only as test oracles. γ = 107° leans the axes inward like the real vehicle; the papers' A matches at 180° − γ.</p>
+<p class="note">The code builds $A$ from the model's geometry and uses the printed closed forms only as test oracles. $\gamma = 107^\circ$ leans the axes inward like the real vehicle; the papers' $A$ matches at $180^\circ - \gamma$.</p>
 
 </Section>
 
 </Col>
 <Col>
 
-<Section n={5} title="Total fault: a pitch pulse" sub="ICRIS18 Fig. 6: motor 2 off, a −1 N·m pitch torque from 5 to 15 s. Single runs, 4s battery, null-space allocation.">
+<Section n={5} title="Total fault: a pitch pulse" refs={frontmatter.references} sub="ICRIS18 [@icris18] Fig. 6: motor 2 off, a −1 N·m pitch torque from 5 to 15 s. Single runs, 4s battery, null-space allocation.">
 
 <Chart data="pulse.csv" plot="pulse" alt="Pitch angle during the pulse: with aggressive gains the faulty vehicle tracks the no-fault response; with mild gains it peaks at 28 degrees." />
 
-<p class="note">Aggressive gains track the no-fault response almost exactly, as in the paper. Mild gains peak at 28° where the paper shows ≈ 11°: with Kp = 1.4 N·m/rad a 1 N·m pulse alone gives a 41° static deflection, so the paper's printed gains and pulse can't both be what it simulated.</p>
+<p class="note">Aggressive gains track the no-fault response almost exactly, as in the paper. Mild gains peak at 28° where the paper shows ≈ 11°: with $K_p = 1.4$ N·m/rad a 1 N·m pulse alone gives a 41° static deflection, so the paper's printed gains and pulse can't both be what it simulated.</p>
 
 </Section>
 
-<Section n={6} title="Where the thrust goes" sub="ICRIS18 Fig. 11: mean PWM per motor in hover, healthy vs motor 2 off. Thrust ∝ PWM².">
+<Section n={6} title="Where the thrust goes" refs={frontmatter.references} sub="ICRIS18 [@icris18] Fig. 11: mean PWM per motor in hover, healthy vs motor 2 off. Thrust $\propto \mathrm{PWM}^2$.">
 
 <Chart data="hover.csv" plot="hover" alt="Mean PWM per motor before and after motor 2 is switched off: all six at 66 % when healthy; after the fault motor 2 is off, motor 5 sits on the 14 % floor, and motors 3 and 6 carry the most at 87 % and 82 %." />
 
@@ -203,9 +203,9 @@ with $D = 3\alpha^2 + 1$. Every healthy motor gets a positive share [@taes16] ex
     <tr><td>Nominal, 107°</td><td>–</td><td class="best">pass</td></tr>
     <tr><td>Motor 1, 2, …, 6 off mid-hover</td><td>≤ 1.5°</td><td class="best">pass × 6</td></tr>
     <tr><td>Go to 3.6 m, motor 2 off</td><td>≤ 3.1°</td><td class="best">pass</td></tr>
-    <tr><td>3s, partial fault h = 0.241</td><td>≤ 0.8°</td><td class="best">pass</td></tr>
-    <tr><td>γ = 73°, motor 2 off</td><td>≤ 1.4°</td><td class="best">pass</td></tr>
-    <tr><td>γ = 90°, motor 2 off</td><td>&gt; 60°</td><td class="bad">fails, as expected</td></tr>
+    <tr><td>3s, partial fault $h = 0.241$</td><td>≤ 0.8°</td><td class="best">pass</td></tr>
+    <tr><td>$\gamma = 73^\circ$, motor 2 off</td><td>≤ 1.4°</td><td class="best">pass</td></tr>
+    <tr><td>$\gamma = 90^\circ$, motor 2 off</td><td>&gt; 60°</td><td class="bad">fails, as expected</td></tr>
   </tbody>
 </table></div>
 
@@ -215,8 +215,8 @@ with $D = 3\alpha^2 + 1$. Every healthy motor gets a positive share [@taes16] ex
 
 <Section n={8} title="Against the papers">
 
-- **Reproduced.** RPIC17 Fig. 7–8: flat + pinv rolls over 1.3 s after the cap, tilted + null space holds. Hover before the fault reads 60 % PWM (paper ≈ 60 %).
-- **Reproduced.** ICRIS18 Fig. 6, 11: aggressive gains track, motor 2 at 0, motor 5 lowest and on the floor.
+- **Reproduced.** RPIC17 [@rpic17] Fig. 7–8: flat + pinv rolls over 1.3 s after the cap, tilted + null space holds. Hover before the fault reads 60 % PWM (paper ≈ 60 %).
+- **Reproduced.** ICRIS18 [@icris18] Fig. 6, 11: aggressive gains track, motor 2 at 0, motor 5 lowest and on the floor.
 - **Not reproduced.** RPIC17 motor levels after the fault: ours 40 / 41 / 66–72 %, the paper's ≈ 22 / 30–35 / 80 %. That is flight data, so the gap can be sim-to-real.
 - **Yaw asymmetry** (ICRIS18 Fig. 12–13): both directions settle; the stressed one is not visibly worse with steps and no noise.
 
@@ -225,8 +225,8 @@ with $D = 3\alpha^2 + 1$. Every healthy motor gets a positive share [@taes16] ex
 <Section n={9} title="Assumptions and limits">
 
 - **PWM → thrust is quadratic**, $f = F_M (u/u_{\max})^2$, fitted to two points (derived). The papers' linear model puts hover at 46 % PWM against 60 % measured, and leaves no hover with motor 5 on the floor.
-- **Inertia**: ICRIS18's [@icris18] Jz = 0.1094 breaks Jx + Jy ≥ Jz, so the model uses Jz ≈ Jx + Jy.
-- **Rotor speed** ω_max = 1000 rad/s is assumed; the papers give none.
+- **Inertia**: the identified $J_z = 0.1094$ of ICRIS18 [@icris18] breaks $J_x + J_y \ge J_z$, so the model uses $J_z \approx J_x + J_y$.
+- **Rotor speed** $\omega_{\max} = 1000$ rad/s is assumed; the papers give none.
 - **Not modelled**: sensor noise and an estimator, ground effect, battery sag, motor restart transients.
 
 </Section>

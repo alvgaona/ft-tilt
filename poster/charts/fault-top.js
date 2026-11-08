@@ -1,8 +1,8 @@
 // Section 1: top views of the flat and the tilted hexacopter during RPIC17's in-flight fault, at
-// time state.t (s after motor 2 is capped). Ring = PWM per motor; the drawing foreshortens with
+// time state.t (s since the clip starts; motor 2 is capped at T_FAULT). Ring = PWM per motor; the drawing foreshortens with
 // roll and pitch. Data units: arm length 1 = R px, both panels side by side.
 const R = 74, W = 300, H = 250, TOP = 44; // px: one panel, and the title band above it
-const T_GONE = 1.3; // the flat vehicle has rolled over 1.3 s after the fault
+const T_FAULT = 5, T_GONE = T_FAULT + 1.3; // the flat vehicle has rolled over 1.3 s after the fault
 const rad = Math.PI / 180;
 const ring = 15 / R;
 const VEHICLES = [
@@ -21,7 +21,7 @@ export default (rows, Plot, { t }) => {
     const mine = rows.filter((d) => d.vehicle === v.key);
     const gone = v.key === "std" && t >= T_GONE;
     const d = nearest(mine, gone ? T_GONE - 0.1 : t);
-    const faulty = t >= 0 && t < 15;
+    const faulty = t >= T_FAULT && t < T_FAULT + 15;
     const alpha = gone ? 0.35 : 1;
     const pos = [0, 1, 2, 3, 4, 5].map((m) => proj(Math.cos((m * Math.PI) / 3), Math.sin((m * Math.PI) / 3), d.roll, d.pitch));
     bodies.push({ pts: [...pos, pos[0]].map(([x, y]) => [cx + x / 3, y / 3]), color: v.color, alpha });

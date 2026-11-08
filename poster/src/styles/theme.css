@@ -91,7 +91,8 @@ footer { margin-top: 1.9rem; color: var(--muted); font-size: .8rem; font-family:
 .posuta-tip b { font-weight: 600; color: var(--muted); }
 .posuta-slider:not([hidden]) { display: flex; align-items: center; gap: .8rem; font-size: .87rem; color: var(--muted); }
 .posuta-slider input { flex: 1; max-width: 20rem; accent-color: var(--accent); }
-.posuta-slider output { font-family: var(--font-mono); min-width: 3ch; }
+/* Fixed width ("-4.9", "10.1" are 4 chars): a readout that grows resizes the track and the thumb jumps. */
+.posuta-slider output { font-family: var(--font-mono); min-width: 4ch; text-align: right; }
 
 .posuta-eq { gap: 1rem; }
 .posuta-eq-n { color: var(--muted); font-family: var(--font-mono); font-size: .87rem; }
@@ -101,6 +102,8 @@ footer { margin-top: 1.9rem; color: var(--muted); font-size: .8rem; font-family:
 @media screen and (max-width: 1000px) { .hero { grid-template-columns: 1fr; } }
 /* ft-tilt: the original poster's blocks. */
 .top { margin-bottom: 1.9rem; }
+/* Line the unpanelled headings up with the panel's (padding + border). */
+.top .posuta-section:not(.panel) { padding-top: calc(.93rem + 1px); }
 .cols .posuta-section { border-top: 1px solid var(--border); padding-top: .93rem; }
 .note { color: var(--muted); font-size: .83rem; margin-top: .53rem; }
 .posuta-section ul { margin: .53rem 0; padding-left: 1.2rem; display: grid; gap: .4rem; }

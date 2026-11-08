@@ -1,4 +1,4 @@
-// Section 5: ICRIS18 Fig. 6, pitch during a −1 N·m pitch pulse (5–15 s) with motor 2 off.
+// Section 6: ICRIS18 Fig. 6, pitch during a −1 N·m pitch pulse (5–15 s) with motor 2 off.
 const SERIES = [
   { key: "nofault", name: "No fault, aggressive", color: "var(--c-std)", dash: "4 3", width: 1.6 },
   { key: "aggr", name: "Motor 2 off, aggressive", color: "var(--c-aggr)", width: 1.6 },

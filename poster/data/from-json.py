@@ -11,14 +11,15 @@ from pathlib import Path
 here = Path(__file__).parent
 d = json.load(open(sys.argv[1] if len(sys.argv) > 1 else here / "data.json"))
 
-# Fault: one row per vehicle and 0.1 s step; t is seconds after motor 2 is capped (15 s in the run).
+# Fault: one row per vehicle and 0.1 s step; t is seconds since the clip starts
+# (10 s into the run), so motor 2 is capped at t = 5 s (15 s in the run).
 f = d["fault"]
 with open(here / "fault.csv", "w", newline="") as out:
     w = csv.writer(out)
     w.writerow(["vehicle", "t", "roll", "pitch", *(f"pwm{m}" for m in range(1, 7))])
     for v in ("std", "tilt"):
         for j, t in enumerate(f["t"]):
-            w.writerow([v, round(t - 15, 1), f[v]["roll"][j], f[v]["pitch"][j], *(int(x) for x in f[v]["pwm"][j])])
+            w.writerow([v, round(t - 10, 1), f[v]["roll"][j], f[v]["pitch"][j], *(int(x) for x in f[v]["pwm"][j])])
 
 # Pulse: pitch (deg) per gain set, 20 Hz, paper time.
 p = d["pulse"]

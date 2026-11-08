@@ -5,8 +5,10 @@ export default (rows, Plot) => ({
   fx: { tickFormat: (m) => `motor ${m}`, label: null, padding: 0.25, tickSize: 0 },
   x: { axis: null, domain: ["healthy", "motor 2 off"], padding: 0.1 },
   y: { domain: [0, 100], ticks: [0, 25, 50, 75, 100], tickFormat: (v) => `${v}%`, grid: true, label: "Mean PWM in hover", labelArrow: "none", tickSize: 0 },
-  color: { domain: ["healthy", "motor 2 off"], range: ["var(--c-std)", "var(--c-tilt)"], legend: true },
+  color: { domain: ["healthy", "motor 2 off"], range: ["var(--c-std)", "var(--c-tilt)"], legend: true, label: "Case" },
   marks: [
+    // Invisible, and first: posuta's tooltip follows the first mark with x and y, and bars only have y1/y2.
+    Plot.dot(rows, { fx: "motor", x: "state", y: "pwm", fill: "state", r: 0 }),
     Plot.barY(rows, { fx: "motor", x: "state", y: "pwm", fill: "state", rx: 2 }),
     Plot.ruleY([14], { stroke: "var(--c-fault)", strokeDasharray: "4 3" }),
     // Right of motor 6, where no bar covers it.

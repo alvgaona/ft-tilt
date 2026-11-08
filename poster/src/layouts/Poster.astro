@@ -22,6 +22,18 @@ const qrUrl = frontmatter.qr === false ? undefined : frontmatter.qr ?? (Astro.si
 ---
 <Canvas title={`${title}${highlight ? ` ${highlight}` : ""}`} description={description} print={print} theme={theme}>
   <header class="hero" data-name="the title block">
+    {/* SVG, not a CSS gradient + mask: Chrome prints those as low-resolution bitmaps. */}
+    <svg class="hero-grid" aria-hidden="true">
+      <defs>
+        <pattern id="hero-grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M0 0.5H48M0.5 0V48" /></pattern>
+        <radialGradient id="hero-fade" cx="30%" cy="40%" r="92%">
+          <stop offset="20%" style="stop-color: var(--bg); stop-opacity: 0" />
+          <stop offset="70%" style="stop-color: var(--bg); stop-opacity: 1" />
+        </radialGradient>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#hero-grid)" />
+      <rect width="100%" height="100%" fill="url(#hero-fade)" />
+    </svg>
     <div>
       {eyebrow && <div class="eyebrow">{eyebrow}</div>}
       <h1>{title}{highlight && <> <em>{highlight}</em></>}</h1>

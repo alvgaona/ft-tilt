@@ -12,7 +12,13 @@ const VEHICLES = [
 
 // Body point (x forward, y left) → page, x to the right and y up, foreshortened by roll and pitch.
 const proj = (x, y, r, p) => [-y * Math.cos(r * rad), x * Math.cos(p * rad) + y * Math.sin(r * rad) * Math.sin(p * rad)];
-const nearest = (rows, t) => rows.reduce((a, b) => (Math.abs(b.t - t) < Math.abs(a.t - t) ? b : a));
+// The data is 10 Hz; blend the two rows around t so the animation moves smoothly between them.
+const KEYS = ["roll", "pitch", "pwm1", "pwm2", "pwm3", "pwm4", "pwm5", "pwm6"];
+const at = (rows, t) => {
+  const j = Math.max(1, Math.min(rows.length - 1, rows.findIndex((d) => d.t >= t)));
+  const [a, b] = [rows[j - 1], rows[j]], k = Math.max(0, Math.min(1, (t - a.t) / (b.t - a.t)));
+  return Object.fromEntries(KEYS.map((key) => [key, a[key] + k * (b[key] - a[key])]));
+};
 
 export default (rows, Plot, { t }) => {
   const arms = [], hubs = [], arcs = [], labels = [], bodies = [], titles = [];
@@ -20,7 +26,7 @@ export default (rows, Plot, { t }) => {
     const cx = (k * W) / R;
     const mine = rows.filter((d) => d.vehicle === v.key);
     const gone = v.key === "std" && t >= T_GONE;
-    const d = nearest(mine, gone ? T_GONE - 0.1 : t);
+    const d = at(mine, gone ? T_GONE - 0.1 : t);
     const faulty = t >= T_FAULT && t < T_FAULT + 15;
     const alpha = gone ? 0.35 : 1;
     const pos = [0, 1, 2, 3, 4, 5].map((m) => proj(Math.cos((m * Math.PI) / 3), Math.sin((m * Math.PI) / 3), d.roll, d.pitch));
@@ -51,7 +57,7 @@ export default (rows, Plot, { t }) => {
       Plot.link(arms, { x1: "x1", y1: "y1", x2: "x2", y2: "y2", stroke: "color", strokeOpacity: "alpha", strokeWidth: 3, strokeLinecap: "round" }),
       Plot.dot(hubs, { x: "x", y: "y", r: 15, fill: "var(--bg)", stroke: "var(--border)", strokeWidth: 4 }),
       Plot.line(arcs, { x: "x", y: "y", z: "id", stroke: "color", strokeOpacity: "alpha", strokeWidth: 4, curve: "linear" }),
-      Plot.text(hubs, { x: "x", y: "y", text: "pwm", fontSize: 10, fontFamily: "var(--font-mono)", fill: "var(--fg)" }),
+      Plot.text(hubs, { x: "x", y: "y", text: (d) => Math.round(d.pwm), fontSize: 10, fontFamily: "var(--font-mono)", fill: "var(--fg)" }),
       Plot.text(hubs, { x: "nx", y: "ny", text: "n", fontSize: 10, fill: "var(--muted)" }),
       Plot.text(labels.filter((l) => !l.gone), { x: "x", y: "y", text: "text", fontSize: 10, fill: "var(--muted)" }),
       Plot.text(labels.filter((l) => l.gone), { x: "x", y: "y", text: "text", fontSize: 20, fontWeight: 600, fontFamily: "var(--font-display)",

@@ -7,13 +7,16 @@ const SERIES = [
 
 export default (rows, Plot) => {
   const peak = rows.reduce((a, b) => (b.mild > a.mild ? b : a));
+  const long = rows.flatMap((d) => SERIES.map((s) => ({ t: d.t, run: s.name, pitch: d[s.key] })));
   return {
     width: 560, height: 250, marginLeft: 40, marginRight: 12, marginTop: 34, marginBottom: 24,
     style: { fontSize: "11px" },
     x: { domain: [0, 25], ticks: [0, 5, 10, 15, 20, 25], tickFormat: (s) => `${s} s`, label: null, tickSize: 0 },
     y: { domain: [-30, 30], ticks: [-30, -15, 0, 15, 30], tickFormat: (v) => `${v}°`, grid: true, label: "Pitch angle", labelArrow: "none", tickSize: 0 },
-    color: { domain: SERIES.map((s) => s.name), range: SERIES.map((s) => s.color), legend: true },
+    color: { domain: SERIES.map((s) => s.name), range: SERIES.map((s) => s.color), legend: true, label: "Run" },
     marks: [
+      // Invisible, and first: posuta's tooltip follows the first x/y mark, and this one holds all three runs.
+      Plot.line(long, { x: "t", y: "pitch", stroke: "run", strokeOpacity: 0 }),
       Plot.rect([0], { x1: () => 5, x2: () => 15, fill: "var(--fault-tint)" }),
       Plot.ruleY([0], { stroke: "var(--muted)" }),
       ...SERIES.map((s) => Plot.line(rows, { x: "t", y: s.key, stroke: () => s.name, strokeWidth: s.width, strokeDasharray: s.dash, strokeLinejoin: "round" })),

@@ -21,12 +21,11 @@ const { chart, sync = "", speed = 1 } = Astro.props;
       input.dispatchEvent(new Event("input", { bubbles: true }));
     };
     input.addEventListener("input", () => others.forEach((o) => { o.value = input.value; o.dispatchEvent(new Event("input")); }));
-    // shortcut: posuta 0.1.0 shows the raw value ("1", "1.1"); show the step's decimals ("1.0") until posuta does.
+    // shortcut: posuta 0.1.0 shows the raw value ("1", "1.1"); show one decimal ("1.0") until posuta formats it.
     const label = input.closest(".posuta-slider")!;
     const out = label.querySelector("output");
-    const decimals = (input.step.split(".")[1] ?? "").length;
     // On the label: the event bubbles there after posuta's handler on the input has written its value.
-    label.addEventListener("input", () => { if (out) out.value = (+input.value).toFixed(decimals); });
+    label.addEventListener("input", () => { if (out) out.value = (+input.value).toFixed(1); });
     let playing = false, last: number | null = null, value = +input.value;
     const step = (now: number) => {
       if (!playing) return;

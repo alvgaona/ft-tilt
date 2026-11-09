@@ -1,0 +1,8 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ft-tilt",
+  "account_id": "2b340c94a149d6add7a27f23b539e245",
+  "compatibility_date": "2026-11-09",
+  "assets": { "directory": "./dist" },
+  "routes": [{ "pattern": "ft-tilt.alvgaona.dev", "custom_domain": true }]
+}
